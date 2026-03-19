@@ -605,12 +605,74 @@ const SLABELS  = {math:'📐 Math',english:'📖 English',hindi:'🇮🇳 Hindi'
                   space:'🚀 Space',animals:'🦒 Animals'};
 
 /* ── Helpers ─────────────────────────────────── */
-const $  = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
+
+/* Recreate same device fingerprint key as security.js
+   so admin can decrypt player data encrypted by the game */
+const PROTECTED_KEYS = ['qb_player','qb_lb','qb_settings'];
+
+const _SK = (() => {
+  const fp = [navigator.userAgent, navigator.language, screen.colorDepth,
+              screen.width+'x'+screen.height, new Date().getTimezoneOffset()].join('|');
+  let h = 0x811c9dc5;
+  for(let i=0;i<fp.length;i++){h^=fp.charCodeAt(i);h=(h*0x01000193)>>>0;}
+  const key=[]; let s=h;
+  for(let i=0;i<32;i++){
+    s=(s+0x9e3779b9)>>>0; let z=s;
+    z=((z^(z>>>16))*0x85ebca6b)>>>0;
+    z=((z^(z>>>13))*0xc2b2ae35)>>>0;
+    key.push((z^(z>>>16))&0xff);
+  }
+  return key;
+})();
+
+function _xorDecrypt(b64){
+  try{
+    const raw=atob(b64); let out='';
+    for(let i=0;i<raw.length;i++)
+      out+=String.fromCharCode(raw.charCodeAt(i)^_SK[i%32]);
+    return decodeURIComponent(escape(out));
+  }catch{return null;}
+}
+
+function _secRead(key){
+  try{
+    if(PROTECTED_KEYS.includes(key)){
+      const raw=localStorage.getItem('_sec_'+key);
+      if(raw){
+        // Strip HMAC tag: format is "encryptedData|tag"
+        const pipe=raw.lastIndexOf('|');
+        const enc=pipe!==-1 ? raw.slice(0,pipe) : raw;
+        const dec=_xorDecrypt(enc);
+        if(dec) return JSON.parse(dec);
+      }
+      // Fallback: plain unencrypted (new player / first run)
+      const plain=localStorage.getItem(key);
+      return plain ? JSON.parse(plain) : null;
+    }
+    const v=localStorage.getItem(key);
+    return v ? JSON.parse(v) : null;
+  }catch{return null;}
+}
+
+function _secWrite(key, val){
+  // Write plain JSON; security.js will re-encrypt on next game load
+  localStorage.setItem(key, JSON.stringify(val));
+  // Remove encrypted copy so game re-encrypts fresh on load
+  localStorage.removeItem('_sec_'+key);
+}
+
+function _secDel(key){
+  localStorage.removeItem(key);
+  localStorage.removeItem('_sec_'+key);
+}
+
 const ls = {
-  get(k)   { try{return JSON.parse(localStorage.getItem(k));}catch{return null;} },
-  set(k,v) { localStorage.setItem(k,JSON.stringify(v)); },
-  del(k)   { localStorage.removeItem(k); },
+  get(k)   { return _secRead(k); },
+  set(k,v) { _secWrite(k,v); },
+  del(k)   { _secDel(k); },
 };
+
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(msg, type='ok'){
   const t=$('toast'); t.textContent=msg; t.className=type;
