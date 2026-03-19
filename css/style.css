@@ -94,10 +94,15 @@ body {
   box-shadow:0 4px 16px rgba(0,0,0,.3); transition:var(--tr);
   backdrop-filter:blur(8px);
 }
-/* Show only when body has .home-visible class */
+/* Show only when body has .home-visible class AND settings NOT open */
 body.home-visible .fab-settings,
 body.home-visible .fab-sound {
   display:flex;
+}
+/* Hide FAB when any overlay is open */
+body.overlay-open .fab-settings,
+body.overlay-open .fab-sound {
+  display:none !important;
 }
 .fab-settings { top:14px; right:16px; }
 .fab-settings:hover { background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(60deg) scale(1.08); }
