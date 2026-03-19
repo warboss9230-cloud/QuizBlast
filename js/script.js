@@ -476,30 +476,25 @@ const App = (() => {
 
   // Quick launch a game mode directly from splash
   function quickLaunch(mode){
+    if(mode==='timeattack'){ goTo('screen-select'); setTimeout(()=>TimeAttack.start(),50); return; }
+    if(mode==='boss')       { BattleHub.openBoss(); return; }
+    if(mode==='pvp')        { BattleHub.openPvP();  return; }
+    // Set mode then go to picker for class/subject selection
     goTo('screen-select');
-    // Set the mode in SelectScreen then start
     setTimeout(()=>{
-      // activate the right mode button
-      document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
-      if(mode==='timeattack'){
-        // Time attack has no mode-btn, go directly
-        TimeAttack.start();return;
-      }
-      const modeMap={freeplay:0,timer:1,level:2};
-      const idx=modeMap[mode]??0;
-      const btns=document.querySelectorAll('.mode-btn');
-      if(btns[idx])btns[idx].classList.add('active');
-      // Update SelectScreen internal state
       SelectScreen.setMode(mode);
-      if(mode==='level'){ LevelMode.start(); }
-      else Game.start();
+      goTo('screen-picker');
     },50);
   }
 
   function goTo(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     const s=$(id);if(!s)return;s.classList.add('active');
+    // Show settings/sound FABs only on splash + home
+    const homeScreens=['screen-splash','screen-select'];
+    document.body.classList.toggle('home-visible', homeScreens.includes(id));
     if(id==='screen-select')      SelectScreen.refresh();
+    if(id==='screen-picker')      SelectScreen.refreshPicker();
     if(id==='screen-leaderboard') Leaderboard.render();
     if(id==='screen-progress')    ProgressScreen.render();
     if(id==='screen-pvp-hub')     PvPOffline.refreshHub();
@@ -631,6 +626,14 @@ const SelectScreen = (() => {
     if(sub)sub.textContent=done?'✅ Completed for today!':'Today\'s quiz – Tap to play!';
   }
   function refresh(){Player.updateHUD();updateDailyBanner();}
+  function refreshPicker(){
+    // Update mode badge on picker screen
+    const badge=$('pickerModeBadge');
+    if(badge){
+      const modeLabels={freeplay:'🎮 Free Play',timer:'⏱️ Timer Mode',level:'🏆 Level Mode'};
+      badge.textContent=modeLabels[mode]||'🎮 Free Play';
+    }
+  }
   function get(){return{cls,subject,mode};}
   function setMode(m){
     mode=m;
@@ -639,7 +642,7 @@ const SelectScreen = (() => {
     const btns=document.querySelectorAll('.mode-btn');
     if(btns[idx])btns[idx].classList.add('active');
   }
-  return{build,refresh,get,setMode};
+  return{build,refresh,refreshPicker,get,setMode};
 })();
 
 /* ════════════════════════════════════════════════════
@@ -1512,60 +1515,45 @@ const ExamMode = (() => {
    • Uses pointerdown to avoid browser copy menu
 ════════════════════════════════════════════════════ */
 const AdminAccess = (() => {
-  let taps = 0, timer = null;
-  const TAPS_NEEDED = 5;
+  let taps = 0, timer = null, blocked = false, blockTimer = null;
+  const TAPS_NEEDED = 7;
+  const MAX_TAPS    = 20;   // too many taps → block
+  const BLOCK_MS    = 30000; // block for 30 seconds
 
   let lastTapTime = 0;
+
   function tap(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
+
+    // If blocked, silently ignore
+    if (blocked) return;
+
     // Deduplicate pointerdown + touchstart firing together
     const now = Date.now();
     if (now - lastTapTime < 100) return;
     lastTapTime = now;
+
     taps++;
 
-    // Flash lock button
-    const btn = document.getElementById('adminLockBtn');
-    if (btn) {
-      btn.style.opacity = '1';
-      btn.style.transform = 'scale(1.3)';
-      btn.style.color = '#6c63ff';
-      setTimeout(() => {
-        btn.style.opacity = '.28';
-        btn.style.transform = 'scale(1)';
-        btn.style.color = '#9ba3d0';
-      }, 200);
+    // Too many taps without success → block silently
+    if (taps > MAX_TAPS) {
+      taps = 0;
+      blocked = true;
+      clearTimeout(blockTimer);
+      blockTimer = setTimeout(() => { blocked = false; }, BLOCK_MS);
+      return;
     }
 
-    showProgress();
     clearTimeout(timer);
 
     if (taps >= TAPS_NEEDED) {
       taps = 0;
-      clearProgress();
       openAdmin();
       return;
     }
-    timer = setTimeout(() => { taps = 0; clearProgress(); }, 2500);
-  }
 
-  let progressEl = null;
-  function showProgress() {
-    if (!progressEl) {
-      progressEl = document.createElement('div');
-      progressEl.style.cssText =
-        'position:fixed;bottom:58px;right:10px;z-index:999;' +
-        'font-size:.7rem;font-weight:900;color:#6c63ff;letter-spacing:2px;' +
-        'background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.3);' +
-        'border-radius:20px;padding:4px 10px;pointer-events:none;';
-      document.body.appendChild(progressEl);
-    }
-    progressEl.textContent = '●'.repeat(taps) + '○'.repeat(TAPS_NEEDED - taps);
-    progressEl.style.display = 'block';
-  }
-
-  function clearProgress() {
-    if (progressEl) progressEl.style.display = 'none';
+    // Reset after 2.5s inactivity — no visible feedback
+    timer = setTimeout(() => { taps = 0; }, 2500);
   }
 
   function openAdmin() {
@@ -1580,19 +1568,15 @@ const AdminAccess = (() => {
     setTimeout(() => { window.location.href = 'admin.html'; }, 600);
   }
 
-  // Attach event listeners properly after DOM ready
   function init() {
     const logo = document.getElementById('logoTap');
     const lock = document.getElementById('adminLockBtn');
 
-    // Use pointerdown (fires before browser copy menu)
-    // Also handle touchstart for older Android
     ['pointerdown','touchstart'].forEach(evt => {
       if (logo) logo.addEventListener(evt, tap, { passive: false });
       if (lock) lock.addEventListener(evt, tap, { passive: false });
     });
 
-    // Block context menu (long press on mobile = copy menu)
     [logo, lock].forEach(el => {
       if (!el) return;
       el.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
