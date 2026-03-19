@@ -992,7 +992,6 @@ const Game = (() => {
   }
 
   function start(){
-    clearInterval(iv); iv=null; // clear any previous timer
     const sel=SelectScreen.get();
     if(sel.mode==='level'){LevelMode.start();return;}
     // Show loading indicator briefly, then load questions
@@ -1881,35 +1880,59 @@ const AdminAccess = (() => {
    Fallback : BANK object (built-in)
 ════════════════════════════════════════════════════ */
 const QuestionLoader = (() => {
-  const cache = {}; // cache loaded JSON to avoid re-fetching
+  const cache = {};
+
+  // Check if running on file:// (local) — fetch won't work
+  const isLocal = location.protocol === 'file:';
 
   async function load(cls, subj) {
     const key = `${cls}_${subj}`;
     if (cache[key]) return cache[key];
+
+    // On file:// skip fetch, use BANK directly
+    if (isLocal) {
+      const fallback = getBankFallback(cls, subj);
+      cache[key] = fallback;
+      return fallback;
+    }
 
     try {
       const res = await fetch(`questions/class${cls}/${subj}.json`);
       if (!res.ok) throw new Error('not found');
       const data = await res.json();
       if (Array.isArray(data) && data.length) {
-        cache[key] = data;
-        return data;
+        // Merge with any admin custom questions
+        const custom = getCustomQuestions(cls, subj);
+        const merged = [...data, ...custom.filter(cq => !data.find(q => q.q === cq.q))];
+        cache[key] = merged;
+        return merged;
       }
       throw new Error('empty');
     } catch (e) {
-      // Fallback to built-in BANK
-      const fallback = (BANK[cls] && BANK[cls][subj]) || [];
+      const fallback = getBankFallback(cls, subj);
       cache[key] = fallback;
       return fallback;
     }
   }
 
-  // Preload current selection silently
-  function preload(cls, subj) {
-    load(cls, subj).catch(() => {});
+  function getBankFallback(cls, subj) {
+    const bank = (BANK[cls] && BANK[cls][subj]) ||
+                 (BANK[String(cls)] && BANK[String(cls)][subj]) || [];
+    const custom = getCustomQuestions(cls, subj);
+    return [...bank, ...custom.filter(cq => !bank.find(q => q.q === cq.q))];
   }
 
-  // Clear cache (call after admin adds custom questions)
+  function getCustomQuestions(cls, subj) {
+    try {
+      const all = JSON.parse(localStorage.getItem('qb_custom_questions') || '{}');
+      return all[`${cls}_${subj}`] || [];
+    } catch { return []; }
+  }
+
+  function preload(cls, subj) {
+    if (!isLocal) load(cls, subj).catch(() => {});
+  }
+
   function clearCache(cls, subj) {
     if (cls && subj) delete cache[`${cls}_${subj}`];
     else Object.keys(cache).forEach(k => delete cache[k]);
@@ -1930,18 +1953,9 @@ const AdminCfg = (() => {
   function get(key, fallback){ return cfg[key]!==undefined ? cfg[key] : fallback; }
   // Merge custom questions into BANK
   function mergeQuestions(){
-    try{
-      const custom = JSON.parse(localStorage.getItem(QKEY)) || {};
-      Object.entries(custom).forEach(([key, qs])=>{
-        if(!qs||!qs.length) return;
-        const [cls, subj] = key.split('_');
-        if(!BANK[String(cls)]) return;
-        if(!BANK[cls][subj]) BANK[cls][subj]=[];
-        // Append only if not already present (avoid duplicates on reload)
-        const existing = BANK[cls][subj];
-        qs.forEach(q=>{ if(!existing.find(e=>e.q===q.q)) existing.push(q); });
-      });
-    }catch(e){}
+    // QuestionLoader now handles custom question merging dynamically
+    // Just clear the cache so next load picks up latest custom questions
+    try{ if(typeof QuestionLoader!=='undefined') QuestionLoader.clearCache(); }catch(e){}
   }
   // Show announcement banner if set
   function showAnnouncement(){
