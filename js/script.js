@@ -430,7 +430,15 @@ const Settings = (() => {
   function setTimer(s){cfg.timerSeconds=s;[5,10,15,30].forEach(t=>{const b=$('ts-'+t);if(b)b.classList.toggle('active',t===s);});persist();}
   function getTimerSeconds(){return cfg.timerSeconds||10;}
   function isAutoHint(){return!!cfg.autoHint;}
-  function resetProgress(){if(!confirm('Reset ALL progress?'))return;localStorage.clear();location.reload();}
+  function resetProgress(){
+    if(!confirm('Reset ALL progress? This cannot be undone.'))return;
+    // Clear both plain and encrypted keys
+    ['qb_player','qb_lb','qb_settings'].forEach(k=>{
+      localStorage.removeItem(k);
+      localStorage.removeItem('_sec_'+k);
+    });
+    location.reload();
+  }
   return{load,save,open,close,applyTheme,applySound,applyAnimations,setFontSize,setTimer,getTimerSeconds,isAutoHint,resetProgress};
 })();
 
@@ -977,13 +985,14 @@ const Game = (() => {
     $('qNumInCardTotal') && ($('qNumInCardTotal').textContent=questions.length);
     $('qTotal') && ($('qTotal').textContent=questions.length);
     const pd=Player.get();
-    if(!pd.subjectsPlayed.includes(cfg.subject)){pd.subjectsPlayed.push(cfg.subject);Player.save();}
+    if(pd.subjectsPlayed&&!pd.subjectsPlayed.includes(cfg.subject)){pd.subjectsPlayed.push(cfg.subject);Player.save();}
     if(!pd.classesPlayed){pd.classesPlayed=[];}
     if(!pd.classesPlayed.includes(cfg.cls)){pd.classesPlayed.push(cfg.cls);Player.save();}
     PowerUp.reset();FairPlay.start();App.goTo('screen-quiz');loadQuestion();
   }
 
   function start(){
+    clearInterval(iv); iv=null; // clear any previous timer
     const sel=SelectScreen.get();
     if(sel.mode==='level'){LevelMode.start();return;}
     // Show loading indicator briefly, then load questions
@@ -1510,6 +1519,7 @@ const PvPOffline = (() => {
 const TimeAttack = (() => {
   let pool=[],qIdx=0,score=0,combo=0,iv=null,timeLeft=60;
   function start(){
+    clearInterval(iv); iv=null; // clear any previous timer
     const sel=SelectScreen.get();
     const bank=(BANK[sel.cls]&&BANK[sel.cls][sel.subject])||[];
     pool=shuffle(bank).map(r=>{const c=r.opts[r.ans],sh=shuffle(r.opts);return{q:r.q,opts:sh,ans:sh.indexOf(c),hint:r.hint};});
@@ -1572,6 +1582,7 @@ const TimeAttack = (() => {
 const ExamMode = (() => {
   let questions=[],answers=[],curIdx=0,iv=null,timeLeft=45*60;
   function start(){
+    clearInterval(iv); iv=null; // clear any previous timer
     const sel=SelectScreen.get();
     let pool=[];
     SUBJECTS.forEach(s=>{
@@ -1745,13 +1756,13 @@ const FairPlay = (() => {
     lastAnswerTime = Date.now();
   }
 
-  // Validate answer attempt
+  // Validate answer attempt — warn only, don't block
   function validateAnswer() {
     if (!active) return true;
     const elapsed = Date.now() - lastAnswerTime;
     if (elapsed < MIN_ANSWER_MS) {
-      showWarning('⚡ Slow down! Read the question carefully.');
-      return false;
+      showWarning('⚡ Read the question carefully!');
+      // Warn but still allow — don't block legitimate fast readers
     }
     return true;
   }
@@ -1924,7 +1935,7 @@ const AdminCfg = (() => {
       Object.entries(custom).forEach(([key, qs])=>{
         if(!qs||!qs.length) return;
         const [cls, subj] = key.split('_');
-        if(!BANK[cls]) return;
+        if(!BANK[String(cls)]) return;
         if(!BANK[cls][subj]) BANK[cls][subj]=[];
         // Append only if not already present (avoid duplicates on reload)
         const existing = BANK[cls][subj];
