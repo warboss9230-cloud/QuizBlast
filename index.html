@@ -143,20 +143,13 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 3 — HOME / SELECT
-     • Player header (sticky)
-     • Daily Challenge
-     • Class + Subject
-     • Game Modes (Free Play / Timer / Level)
-     • Battle Modes (Boss / PvP)
-     • Launch button
+     SCREEN 3 — HOME (Modes & Battle)
 ══════════════════════════════════════ -->
 <div id="screen-select" class="screen">
 
   <!-- Sticky player header -->
   <div class="home-header">
     <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
-    <!-- Player pill — tap to edit profile -->
     <button class="player-pill" onclick="Settings.open()" title="Edit Profile">
       <span class="pp-avatar" id="hudAvatar">🐉</span>
       <div class="pp-info">
@@ -165,7 +158,6 @@
         <span class="pp-level">Lv <span id="hudLevel">1</span></span>
       </div>
     </button>
-    <!-- Coins -->
     <div class="coins-chip">
       <span>🪙</span><span id="hudCoins">0</span>
     </div>
@@ -180,14 +172,6 @@
     </div>
     <div class="daily-badge">+200🪙</div>
   </div>
-
-  <!-- Class selector -->
-  <p class="sect-label mt">Select Class</p>
-  <div class="class-grid" id="classGrid"></div>
-
-  <!-- Subject selector -->
-  <p class="sect-label mt">Select Subject</p>
-  <div class="subject-grid" id="subjectGrid"></div>
 
   <!-- Game Modes -->
   <p class="sect-label mt">🎮 Game Mode</p>
@@ -207,6 +191,39 @@
       <span class="bc-sub">1v1 duel</span>
     </button>
   </div>
+
+  <!-- Go to class/subject picker -->
+  <div class="launch-pad">
+    <button class="btn btn-primary btn-full" onclick="App.goTo('screen-picker')">📚 Select Class &amp; Subject →</button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 3b — CLASS & SUBJECT PICKER
+══════════════════════════════════════ -->
+<div id="screen-picker" class="screen">
+
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-select')">←</button>
+    <h2>Choose Class &amp; Subject</h2>
+    <div class="w38"></div>
+  </div>
+
+  <!-- Selected mode badge -->
+  <div class="picker-mode-row">
+    <span class="picker-mode-lbl">Mode:</span>
+    <span class="picker-mode-badge" id="pickerModeBadge">🎮 Free Play</span>
+    <button class="btn-ghost btn-xs" style="border:none;font-size:.72rem;font-weight:800;color:var(--text2);cursor:pointer;background:none;padding:4px 8px" onclick="App.goTo('screen-select')">Change</button>
+  </div>
+
+  <!-- Class selector -->
+  <p class="sect-label mt">Select Class</p>
+  <div class="class-grid" id="classGrid"></div>
+
+  <!-- Subject selector -->
+  <p class="sect-label mt">Select Subject</p>
+  <div class="subject-grid" id="subjectGrid"></div>
 
   <!-- Launch -->
   <div class="launch-pad">
