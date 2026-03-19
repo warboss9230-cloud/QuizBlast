@@ -228,42 +228,158 @@ const ALL_BADGES = [
    SOUND
 ════════════════════════════════════════════════════ */
 const Sound = (() => {
-  let muted = localStorage.getItem('qb_muted')==='1';
+  let muted = localStorage.getItem('qb_muted') === '1';
+  let _ctx = null;
+
+  function ctx() {
+    if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_ctx.state === 'suspended') _ctx.resume();
+    return _ctx;
+  }
+
+  /* ─── Low-level helpers ─────────────────────────────── */
+  function note(c, freq, startT, dur, vol, wave='sine', slide=null) {
+    const o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = wave;
+    o.frequency.setValueAtTime(freq, startT);
+    if (slide) o.frequency.linearRampToValueAtTime(slide, startT + dur);
+    g.gain.setValueAtTime(0.001, startT);
+    g.gain.linearRampToValueAtTime(vol, startT + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, startT + dur);
+    o.start(startT); o.stop(startT + dur + 0.04);
+  }
+
+  function chord(c, freqs, startT, dur, vol, wave='sine') {
+    freqs.forEach(f => note(c, f, startT, dur, vol / freqs.length, wave));
+  }
+
+  /* ─── KBC CORRECT — "Lock Kiya!" ────────────────────── */
+  function playCorrect() {
+    const c = ctx(), now = c.currentTime;
+    // Rising arpeggio
+    [523,659,784,1046].forEach((f,i) => note(c,f,now+i*0.08,0.15,0.28,'sine'));
+    // Triumphant chord
+    chord(c,[261,392,523,659], now+0.36, 0.55, 0.55, 'triangle');
+    // Sparkle
+    [1568,1760,2093].forEach((f,i) => note(c,f,now+0.52+i*0.06,0.15,0.18,'sine'));
+  }
+
+  /* ─── KBC WRONG — "Galat Jawab!" ────────────────────── */
+  function playWrong() {
+    const c = ctx(), now = c.currentTime;
+    // Descending sawtooth drop
+    [300,250,200,160,130].forEach((f,i) => note(c,f,now+i*0.07,0.22,0.22,'sawtooth'));
+    // Bass thud
+    [90,75,60].forEach((f,i) => note(c,f,now+0.34+i*0.06,0.22,0.2,'square'));
+    // Sliding sad note
+    note(c, 120, now+0.58, 0.5, 0.18, 'sawtooth', 75);
+  }
+
+  /* ─── LEVEL UP — Grand fanfare ──────────────────────── */
+  function playLevelUp() {
+    const c = ctx(), now = c.currentTime;
+    // Fast rising scale
+    [392,494,587,698,784,988,1175].forEach((f,i) => note(c,f,now+i*0.07,0.14,0.22,'sine'));
+    // Final triumphant chord + bass
+    chord(c,[196,392,587,784], now+0.55, 0.8, 0.6, 'triangle');
+    // Extra shine
+    [1568,1760].forEach((f,i) => note(c,f,now+0.6+i*0.08,0.2,0.15,'sine'));
+  }
+
+  /* ─── COIN — Bright ping ────────────────────────────── */
+  function playCoin() {
+    const c = ctx(), now = c.currentTime;
+    note(c, 1046, now,      0.08, 0.25, 'sine');
+    note(c, 1318, now+0.07, 0.07, 0.2,  'sine');
+    note(c, 1568, now+0.13, 0.1,  0.18, 'sine');
+  }
+
+  /* ─── POWERUP — Sci-fi charge ───────────────────────── */
+  function playPowerup() {
+    const c = ctx(), now = c.currentTime;
+    // Rising wobble
+    note(c, 220, now,    0.08, 0.15, 'triangle', 440);
+    note(c, 440, now+0.09, 0.08, 0.18, 'triangle', 880);
+    note(c, 880, now+0.18, 0.12, 0.2,  'sine');
+    note(c, 1108,now+0.28, 0.1,  0.18, 'sine');
+  }
+
+  /* ─── REWARD — Magic sparkle ────────────────────────── */
+  function playReward() {
+    const c = ctx(), now = c.currentTime;
+    [523,659,784,988,1175,1318,1568].forEach((f,i) =>
+      note(c,f, now+i*0.07, 0.15, 0.22, 'sine')
+    );
+    chord(c,[523,659,784], now+0.55, 0.5, 0.45, 'sine');
+  }
+
+  /* ─── UNLOCK — Shimmer reveal ───────────────────────── */
+  function playUnlock() {
+    const c = ctx(), now = c.currentTime;
+    // Shimmering rise
+    [659,784,988,1175,1318,1568,1760,2093].forEach((f,i) =>
+      note(c,f, now+i*0.055, 0.12, 0.18, 'sine')
+    );
+    chord(c,[659,988,1318], now+0.5, 0.45, 0.42, 'triangle');
+  }
+
+  /* ─── BOSS HIT — Heavy impact ───────────────────────── */
+  function playBoss() {
+    const c = ctx(), now = c.currentTime;
+    // Punch impact
+    note(c, 150, now,      0.05, 0.35, 'square', 60);
+    note(c, 100, now+0.05, 0.15, 0.28, 'sawtooth');
+    note(c, 60,  now+0.18, 0.25, 0.22, 'sawtooth', 40);
+    // Rumble
+    [80,70,60,50].forEach((f,i) => note(c,f, now+0.25+i*0.05, 0.1, 0.12, 'square'));
+  }
+
+  /* ─── VICTORY — Epic finale ─────────────────────────── */
+  function playVictory() {
+    const c = ctx(), now = c.currentTime;
+    // Heroic scale
+    [392,494,587,698,784,880,988,1175].forEach((f,i) =>
+      note(c,f, now+i*0.075, 0.16, 0.22, 'sine')
+    );
+    // Grand chord
+    chord(c,[196,294,392,587,784], now+0.65, 1.0, 0.65, 'triangle');
+    // Sparkle burst
+    [1568,1760,1976,2093].forEach((f,i) =>
+      note(c,f, now+0.7+i*0.06, 0.18, 0.16, 'sine')
+    );
+    // Bass hit
+    note(c, 98, now+0.65, 0.6, 0.28, 'square');
+  }
+
+  /* ─── Main dispatcher ───────────────────────────────── */
   function play(name) {
-    if(muted) return;
+    if (muted) return;
     try {
-      const ctx=new(window.AudioContext||window.webkitAudioContext)();
-      const p={
-        correct:{freqs:[523,659,784],     dur:.13,wave:'sine',    vol:.28},
-        wrong:  {freqs:[220,180],          dur:.18,wave:'sawtooth',vol:.18},
-        levelup:{freqs:[523,659,784,1046], dur:.11,wave:'sine',    vol:.28},
-        coin:   {freqs:[880,1108],          dur:.09,wave:'sine',    vol:.2},
-        powerup:{freqs:[440,550],           dur:.1, wave:'triangle',vol:.18},
-        reward: {freqs:[523,784,1046,1318], dur:.09,wave:'sine',    vol:.26},
-        unlock: {freqs:[659,880,1108,1318], dur:.1, wave:'sine',    vol:.28},
-        boss:   {freqs:[150,130,110],       dur:.2, wave:'sawtooth',vol:.25},
-        victory:{freqs:[523,784,1046,1568], dur:.1, wave:'sine',    vol:.3},
-      }[name]||{freqs:[523,659],dur:.12,wave:'sine',vol:.2};
-      p.freqs.forEach((f,i)=>{
-        const o=ctx.createOscillator(),g=ctx.createGain();
-        o.connect(g);g.connect(ctx.destination);
-        const t=ctx.currentTime+i*p.dur;
-        o.type=p.wave;o.frequency.setValueAtTime(f,t);
-        g.gain.setValueAtTime(p.vol,t);
-        g.gain.exponentialRampToValueAtTime(.001,t+p.dur);
-        o.start(t);o.stop(t+p.dur+.05);
-      });
-    }catch(e){}
+      ({
+        correct: playCorrect,
+        wrong:   playWrong,
+        levelup: playLevelUp,
+        coin:    playCoin,
+        powerup: playPowerup,
+        reward:  playReward,
+        unlock:  playUnlock,
+        boss:    playBoss,
+        victory: playVictory,
+      }[name] || playCorrect)();
+    } catch(e) {}
   }
-  function setMuted(v){muted=v;localStorage.setItem('qb_muted',v?'1':'0');syncUI();}
-  function toggle(){setMuted(!muted);}
-  function syncUI(){
-    const b=$('soundToggle');if(b){b.textContent=muted?'🔇':'🔊';b.classList.toggle('muted',muted);}
-    const c=$('settingSound');if(c)c.checked=!muted;
+
+  function setMuted(v) { muted=v; localStorage.setItem('qb_muted',v?'1':'0'); syncUI(); }
+  function toggle()    { setMuted(!muted); }
+  function syncUI() {
+    const b=$('soundToggle'); if(b){ b.textContent=muted?'🔇':'🔊'; b.classList.toggle('muted',muted); }
+    const c=$('settingSound'); if(c) c.checked=!muted;
   }
-  function init(){syncUI();}
-  return{play,setMuted,toggle,init};
+  function init() { syncUI(); }
+  return { play, setMuted, toggle, init };
 })();
+
 
 /* ════════════════════════════════════════════════════
    SETTINGS
