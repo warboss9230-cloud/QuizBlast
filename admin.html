@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>QuizBlast — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d0f1a;--bg2:#141728;--bg3:#1c2040;
+  --card:#1a1e36;--card2:#222847;
+  --border:rgba(255,255,255,.09);
+  --text:#e8eaf6;--text2:#9ba3d0;
+  --accent:#6c63ff;--purple:#a78bfa;--accent2:#ff6584;
+  --gold:#ffd700;--green:#4ade80;--red:#f87171;
+  --cyan:#22d3ee;--orange:#fb923c;
+  --shadow:0 8px 32px rgba(0,0,0,.5);
+  --r:14px;--r-sm:8px;
+  --tr:all .2s cubic-bezier(.4,0,.2,1);
+  --fh:'Baloo 2',cursive;--fb:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── LOGIN ─────────────────────────────── */
+#loginWrap{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;
+  background:radial-gradient(ellipse at 30% 20%,#1a1060,transparent 60%),
+             radial-gradient(ellipse at 70% 80%,#1a0030,transparent 55%),#0d0f1a;
+}
+.login-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:40px 32px;
+  max-width:360px;width:100%;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+}
+.login-logo{font-size:2.8rem;margin-bottom:12px;display:block;animation:float 2.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.login-title{font-family:var(--fh);font-size:1.55rem;font-weight:800;
+  background:linear-gradient(135deg,#fff,var(--purple) 60%,var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.login-sub{color:var(--text2);font-size:.78rem;font-weight:700;margin:4px 0 28px;letter-spacing:.5px;}
+.inp{
+  width:100%;padding:13px 16px;background:var(--bg3);
+  border:2px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);font-family:var(--fb);font-size:.9rem;font-weight:700;
+  outline:none;margin-bottom:10px;transition:var(--tr);
+}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2);}
+.inp::placeholder{color:var(--text2);letter-spacing:normal;}
+.login-err{min-height:18px;font-size:.78rem;font-weight:800;color:var(--red);margin-bottom:8px;}
+.lock-bar{
+  display:none;margin-top:12px;padding:10px;
+  background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+  border-radius:var(--r-sm);font-size:.78rem;font-weight:800;color:var(--red);
+}
+
+/* ── SHARED BUTTONS ─────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 18px;border:none;border-radius:50px;
+  font-family:var(--fb);font-size:.83rem;font-weight:800;
+  cursor:pointer;transition:var(--tr);white-space:nowrap;
+}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(108,99,255,.4);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(108,99,255,.5);}
+.btn-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;}
+.btn-success:hover{transform:translateY(-1px);}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;}
+.btn-danger:hover{transform:translateY(-1px);}
+.btn-warning{background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a1e36;}
+.btn-ghost{background:transparent;color:var(--text2);border:2px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 13px;font-size:.75rem;}
+.btn-xs{padding:4px 10px;font-size:.7rem;}
+.btn-full{width:100%;}
+
+/* ── ADMIN SHELL ────────────────────────── */
+#adminWrap{display:none;min-height:100vh;flex-direction:column;}
+.adm-header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+}
+.adm-brand{display:flex;align-items:center;gap:10px;}
+.adm-brand-icon{font-size:1.4rem;}
+.adm-brand-name{font-family:var(--fh);font-size:1rem;font-weight:800;}
+.adm-badge{
+  background:var(--accent2);color:#fff;font-size:.58rem;font-weight:900;
+  padding:2px 7px;border-radius:20px;letter-spacing:.6px;text-transform:uppercase;
+}
+.adm-right{display:flex;align-items:center;gap:10px;}
+.adm-clock{font-size:.74rem;font-weight:700;color:var(--text2);}
+.adm-logout{
+  padding:6px 13px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:50px;color:var(--text2);font-family:var(--fb);font-size:.76rem;
+  font-weight:800;cursor:pointer;transition:var(--tr);
+}
+.adm-logout:hover{border-color:var(--red);color:var(--red);}
+
+/* Tabs */
+.adm-tabs{
+  display:flex;background:var(--bg2);border-bottom:1px solid var(--border);
+  overflow-x:auto;padding:0 16px;flex-shrink:0;
+}
+.adm-tab{
+  display:flex;align-items:center;gap:5px;padding:12px 16px;
+  background:transparent;border:none;border-bottom:3px solid transparent;
+  color:var(--text2);font-family:var(--fb);font-size:.8rem;font-weight:800;
+  cursor:pointer;transition:var(--tr);white-space:nowrap;
+}
+.adm-tab:hover{color:var(--accent);}
+.adm-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-ic{font-size:.95rem;}
+
+/* Content */
+.adm-body{flex:1;overflow-y:auto;}
+.adm-content{padding:20px;max-width:920px;margin:0 auto;}
+.panel{display:none;}
+.panel.on{display:block;}
+
+/* ── CARDS ──────────────────────────────── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.card-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--fh);font-size:.98rem;font-weight:800;
+  margin-bottom:14px;gap:8px;
+}
+.card-hd-left{display:flex;align-items:center;gap:7px;}
+
+/* ── STAT GRID ──────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+.stat-box{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:14px 10px;text-align:center;
+}
+.stat-val{font-family:var(--fh);font-size:1.55rem;font-weight:800;color:var(--gold);}
+.stat-lbl{font-size:.64rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-top:3px;}
+
+/* ── FORM ELEMENTS ──────────────────────── */
+.fgrp{margin-bottom:13px;}
+.flbl{display:block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:5px;}
+.finp{
+  width:100%;padding:9px 12px;background:var(--bg3);
+  border:2px solid var(--border);border-radius:var(--r-sm);
+  color:var(--text);font-family:var(--fb);font-size:.86rem;font-weight:700;
+  outline:none;transition:var(--tr);
+}
+.finp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.frow-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.fcol{display:flex;flex-direction:column;}
+
+/* Slider */
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider{flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 6px rgba(108,99,255,.5);}
+.slider-val{font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right;}
+
+/* Toggle */
+.tog-sw{position:relative;display:inline-block;width:44px;height:23px;flex-shrink:0;}
+.tog-sw input{opacity:0;width:0;height:0;}
+.tog-track{position:absolute;inset:0;background:var(--bg3);border-radius:23px;cursor:pointer;transition:var(--tr);border:2px solid var(--border);}
+.tog-track::before{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:3px;left:3px;transition:var(--tr);}
+input:checked+.tog-track{background:var(--accent);border-color:var(--accent);}
+input:checked+.tog-track::before{transform:translateX(21px);}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.tog-row:last-child{border-bottom:none;}
+.tog-info{flex:1;}
+.tog-label{font-size:.85rem;font-weight:700;}
+.tog-sub{font-size:.7rem;color:var(--text2);font-weight:700;margin-top:2px;}
+
+/* ── TABLE ──────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse;font-size:.81rem;}
+.tbl th{background:var(--bg3);color:var(--text2);font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+.tbl .acts{display:flex;gap:5px;align-items:center;}
+
+/* Badges */
+.bx{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.67rem;font-weight:800;}
+.bx-green{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25);}
+.bx-gold{background:rgba(255,215,0,.12);color:var(--gold);border:1px solid rgba(255,215,0,.25);}
+.bx-red{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25);}
+.bx-cyan{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.25);}
+.bx-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25);}
+
+/* ── CHART ──────────────────────────────── */
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:90px;padding:4px 0;}
+.cb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.cb{background:linear-gradient(180deg,var(--accent),var(--purple));border-radius:4px 4px 0 0;width:100%;min-height:3px;transition:height .5s ease;}
+.cb.today{background:linear-gradient(180deg,var(--cyan),var(--accent));}
+.cd{font-size:.58rem;font-weight:800;color:var(--text2);}
+
+/* ── QUESTION CARDS ─────────────────────── */
+.qc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-bottom:9px;}
+.qc-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.qc-num{font-size:.65rem;font-weight:900;color:var(--text2);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;}
+.qc-text{flex:1;font-size:.85rem;font-weight:700;}
+.qc-acts{display:flex;gap:5px;flex-shrink:0;}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.opt-row{display:flex;align-items:center;gap:6px;}
+.opt-lbl{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;color:#fff;flex-shrink:0;}
+.opt-a{background:#6c63ff;}.opt-b{background:#22d3ee;}.opt-c{background:#fb923c;}.opt-d{background:#f472b6;}
+.opt-txt{font-size:.78rem;font-weight:700;}
+.opt-txt.correct{color:var(--green);font-weight:900;}
+.cm{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;transition:var(--tr);}
+.cm.on{background:var(--green);border-color:var(--green);}
+.qc-hint{font-size:.68rem;color:var(--gold);font-weight:700;margin-top:6px;}
+
+/* ── SECURITY LOG ───────────────────────── */
+.sec-log{
+  font-family:monospace;font-size:.73rem;color:var(--text2);
+  max-height:200px;overflow-y:auto;
+  background:var(--bg3);border-radius:var(--r-sm);
+  padding:12px;line-height:1.9;
+}
+.log-line.ok{color:var(--green);}
+.log-line.warn{color:var(--gold);}
+.log-line.err{color:var(--red);}
+
+/* ── PROGRESS BARS ──────────────────────── */
+.pbar-wrap{height:7px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:4px;}
+.pbar{height:100%;border-radius:5px;transition:width .6s ease;}
+
+/* ── DIVIDER ────────────────────────────── */
+.div{height:1px;background:var(--border);margin:14px 0;}
+
+/* ── DANGER ZONE ────────────────────────── */
+.danger-zone{
+  border:1px solid rgba(248,113,113,.25);border-radius:var(--r);
+  padding:16px;background:rgba(248,113,113,.04);margin-bottom:16px;
+}
+.danger-title{font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--red);margin-bottom:8px;}
+.danger-desc{font-size:.78rem;color:var(--text2);font-weight:700;margin-bottom:12px;}
+.danger-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ── TOAST ──────────────────────────────── */
+#toast{
+  position:fixed;bottom:22px;right:22px;z-index:9999;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:11px 17px;
+  font-size:.82rem;font-weight:800;display:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  animation:toastPop .22s ease;
+}
+@keyframes toastPop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+#toast.ok{border-color:var(--green);color:var(--green);}
+#toast.er{border-color:var(--red);color:var(--red);}
+#toast.in{border-color:var(--cyan);color:var(--cyan);}
+#toast.wa{border-color:var(--gold);color:var(--gold);}
+
+/* ── CONFIRM MODAL ──────────────────────── */
+#confirmWrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;z-index:500;padding:20px;}
+#confirmWrap.on{display:flex;}
+.confirm-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;max-width:310px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.confirm-ic{font-size:2.4rem;margin-bottom:10px;}
+.confirm-t{font-family:var(--fh);font-size:1.15rem;font-weight:800;margin-bottom:6px;}
+.confirm-m{font-size:.8rem;color:var(--text2);font-weight:700;margin-bottom:20px;line-height:1.5;}
+.confirm-btns{display:flex;gap:8px;}
+.confirm-btns .btn{flex:1;}
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media(max-width:580px){
+  .frow,.frow-3{grid-template-columns:1fr;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .opts-grid{grid-template-columns:1fr;}
+  .adm-content{padding:14px;}
+}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px;}
+::selection{background:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-card">
+    <span class="login-logo">🛡️</span>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-sub">QuizBlast · Owner Access Only</div>
+    <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);
+                border-radius:8px;padding:10px 14px;margin-bottom:18px;text-align:left">
+      <div style="font-size:.72rem;font-weight:800;color:#a78bfa;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Default Password</div>
+      <div style="font-family:monospace;font-size:.9rem;font-weight:800;color:#e8eaf6;letter-spacing:1px">admin@quizblast</div>
+      <div style="font-size:.68rem;color:#9ba3d0;font-weight:700;margin-top:4px">Change it in Security tab after login</div>
+    </div>
+    <input id="lPass" type="password" class="inp" placeholder="Admin Password" autocomplete="new-password" maxlength="40"/>
+    <div class="login-err" id="lErr"></div>
+    <button class="btn btn-primary btn-full" onclick="Auth.login()">🔓 Enter Panel</button>
+    <div class="lock-bar" id="lockBar">🔒 Locked. Try again in <span id="lockSec">60</span>s</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminWrap" style="display:none;flex-direction:column">
+
+  <div class="adm-header">
+    <div class="adm-brand">
+      <span class="adm-brand-icon">🚀</span>
+      <span class="adm-brand-name">QuizBlast Admin</span>
+      <span class="adm-badge">Owner</span>
+    </div>
+    <div class="adm-right">
+      <span class="adm-clock" id="admClock"></span>
+      <button class="adm-logout" onclick="Auth.logout()">🔒 Logout</button>
+    </div>
+  </div>
+
+  <div class="adm-tabs">
+    <button class="adm-tab on" id="t-analytics" onclick="Adm.tab('analytics')"><span class="tab-ic">📊</span>Analytics</button>
+    <button class="adm-tab"    id="t-player"    onclick="Adm.tab('player')"   ><span class="tab-ic">👤</span>Player</button>
+    <button class="adm-tab"    id="t-questions" onclick="Adm.tab('questions')"><span class="tab-ic">❓</span>Questions</button>
+    <button class="adm-tab"    id="t-settings"  onclick="Adm.tab('settings')" ><span class="tab-ic">⚙️</span>Settings</button>
+    <button class="adm-tab"    id="t-security"  onclick="Adm.tab('security')" ><span class="tab-ic">🔐</span>Security</button>
+  </div>
+
+  <div class="adm-body">
+  <div class="adm-content">
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="panel on" id="p-analytics">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📈</span>Weekly Activity</div></div>
+        <div class="chart-wrap" id="weeklyChart"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📚</span>Subject Performance</div></div>
+        <div id="subjChart"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🏆</span>Leaderboard</div></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Coins</th><th>Action</th></tr></thead>
+            <tbody id="lbBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PLAYER ══ -->
+    <div class="panel" id="p-player">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>👤</span>Player Profile</div>
+          <span class="bx bx-green" id="pStatus">Active</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div style="font-size:2.8rem;flex-shrink:0" id="pAvatar">👤</div>
+          <div>
+            <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800" id="pName">—</div>
+            <div style="font-size:.78rem;color:var(--text2);font-weight:700;margin-top:3px" id="pMeta">No data</div>
+          </div>
+        </div>
+        <div class="div"></div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Name</label><input id="e-name" type="text" class="finp" maxlength="20"/></div>
+          <div class="fgrp"><label class="flbl">Coins</label><input id="e-coins" type="number" class="finp" min="0" max="999999"/></div>
+        </div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">XP</label><input id="e-xp" type="number" class="finp" min="0"/></div>
+          <div class="fgrp"><label class="flbl">Level</label><input id="e-level" type="number" class="finp" min="1" max="999"/></div>
+        </div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Total Games</label><input id="e-games" type="number" class="finp" min="0"/></div>
+          <div class="fgrp"><label class="flbl">Day Streak</label><input id="e-streak" type="number" class="finp" min="0"/></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <button class="btn btn-success" onclick="PA.save()">💾 Save</button>
+          <button class="btn btn-warning btn-sm" onclick="PA.give(500,0)">+500🪙</button>
+          <button class="btn btn-warning btn-sm" onclick="PA.give(0,200)">+200⚡</button>
+          <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars()">🎭 Unlock All Avatars</button>
+          <button class="btn btn-ghost btn-sm" onclick="PA.unlockBadges()">🏅 Unlock All Badges</button>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <div class="danger-title">⚠️ Danger Zone</div>
+        <div class="danger-desc">Permanent actions — cannot be undone.</div>
+        <div class="danger-btns">
+          <button class="btn btn-danger btn-sm" onclick="PA.resetStats()">Reset Stats</button>
+          <button class="btn btn-danger btn-sm" onclick="PA.resetCoins()">Reset Coins</button>
+          <button class="btn btn-danger btn-sm" onclick="PA.wipe()">Delete Player</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ QUESTIONS ══ -->
+    <div class="panel" id="p-questions">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>❓</span>Question Bank</div>
+          <button class="btn btn-primary btn-sm" onclick="QA.openForm(-1)">+ Add</button>
+        </div>
+        <div class="frow" style="margin-bottom:12px">
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Class</label>
+            <select id="qCls" class="finp" onchange="QA.load()">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5" selected>5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+          </div>
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Subject</label>
+            <select id="qSubj" class="finp" onchange="QA.load()">
+              <option value="math">Math</option><option value="english">English</option>
+              <option value="hindi">Hindi</option><option value="science">Science</option>
+              <option value="computer">Computer</option><option value="evs">EVS</option>
+              <option value="gk">GK</option><option value="economics">Economics</option>
+              <option value="space">Space</option><option value="animals">Animals</option>
+            </select>
+          </div>
+        </div>
+        <div id="qList"></div>
+        <div id="qMeta" style="font-size:.72rem;color:var(--text2);font-weight:700;margin-top:8px"></div>
+      </div>
+
+      <!-- Question Form -->
+      <div class="card" id="qForm" style="display:none">
+        <div class="card-hd"><div class="card-hd-left"><span id="qfIcon">➕</span><span id="qfTitle">Add Question</span></div></div>
+        <div class="fgrp"><label class="flbl">Question</label><input id="qf-q" type="text" class="finp" placeholder="Type question here…"/></div>
+        <div class="fgrp"><label class="flbl">Hint (shown with 💡 hint power-up)</label><input id="qf-hint" type="text" class="finp" placeholder="Short hint…"/></div>
+        <div class="flbl" style="margin-bottom:8px">Options — click ● to mark correct answer</div>
+        <div class="opts-grid">
+          <div class="opt-row"><div class="opt-lbl opt-a">A</div><input id="qf-a" type="text" class="finp" placeholder="Option A"/><div class="cm" id="qf-cm0" onclick="QA.setAns(0)"></div></div>
+          <div class="opt-row"><div class="opt-lbl opt-b">B</div><input id="qf-b" type="text" class="finp" placeholder="Option B"/><div class="cm" id="qf-cm1" onclick="QA.setAns(1)"></div></div>
+          <div class="opt-row"><div class="opt-lbl opt-c">C</div><input id="qf-c" type="text" class="finp" placeholder="Option C"/><div class="cm" id="qf-cm2" onclick="QA.setAns(2)"></div></div>
+          <div class="opt-row"><div class="opt-lbl opt-d">D</div><input id="qf-d" type="text" class="finp" placeholder="Option D"/><div class="cm" id="qf-cm3" onclick="QA.setAns(3)"></div></div>
+        </div>
+        <input type="hidden" id="qf-idx" value="-1"/>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-primary" onclick="QA.save()">💾 Save Question</button>
+          <button class="btn btn-ghost" onclick="QA.closeForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="panel" id="p-settings">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🎮</span>Gameplay</div></div>
+
+        <div class="fgrp"><label class="flbl">Timer Duration (seconds)</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-timer" min="5" max="60" step="5" value="10"
+              oninput="GS.upd('timerSeconds',+this.value,this,'gs-timer-val','s')"/>
+            <span class="slider-val" id="gs-timer-val">10s</span>
+          </div></div>
+
+        <div class="fgrp"><label class="flbl">Coins — Correct Answer</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-cc" min="5" max="50" step="5" value="10"
+              oninput="GS.upd('coinCorrect',+this.value,this,'gs-cc-val','')"/>
+            <span class="slider-val" id="gs-cc-val">10</span>
+          </div></div>
+
+        <div class="fgrp"><label class="flbl">Coins — Wrong Answer Penalty</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-cw" min="0" max="20" step="1" value="5"
+              oninput="GS.upd('coinWrong',+this.value,this,'gs-cw-val','-','prefix')"/>
+            <span class="slider-val" id="gs-cw-val">-5</span>
+          </div></div>
+
+        <div class="fgrp"><label class="flbl">XP — Correct Answer</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-xp" min="5" max="50" step="5" value="10"
+              oninput="GS.upd('xpCorrect',+this.value,this,'gs-xp-val','')"/>
+            <span class="slider-val" id="gs-xp-val">10</span>
+          </div></div>
+
+        <div class="fgrp"><label class="flbl">Questions per Quiz</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-qn" min="5" max="20" step="5" value="10"
+              oninput="GS.upd('questionsPerQuiz',+this.value,this,'gs-qn-val','')"/>
+            <span class="slider-val" id="gs-qn-val">10</span>
+          </div></div>
+
+        <div class="fgrp"><label class="flbl">Daily Challenge Reward (coins)</label>
+          <div class="slider-row">
+            <input type="range" class="slider" id="gs-dr" min="50" max="1000" step="50" value="200"
+              oninput="GS.upd('dailyReward',+this.value,this,'gs-dr-val','')"/>
+            <span class="slider-val" id="gs-dr-val">200</span>
+          </div></div>
+
+        <div class="div"></div>
+        <div class="tog-row"><div class="tog-info"><div class="tog-label">Auto-show Hints</div><div class="tog-sub">💡 Show hint automatically each question</div></div>
+          <label class="tog-sw"><input type="checkbox" id="gs-ah" onchange="GS.upd('autoHint',this.checked,null,'','')"/><span class="tog-track"></span></label></div>
+        <div class="tog-row"><div class="tog-info"><div class="tog-label">Reward Every 5 Correct</div><div class="tog-sub">🎁 Show reward overlay every 5 correct answers</div></div>
+          <label class="tog-sw"><input type="checkbox" id="gs-rw" checked onchange="GS.upd('rewardEnabled',this.checked,null,'','')"/><span class="tog-track"></span></label></div>
+        <div class="tog-row"><div class="tog-info"><div class="tog-label">Animations</div><div class="tog-sub">✨ Enable all game animations</div></div>
+          <label class="tog-sw"><input type="checkbox" id="gs-anim" checked onchange="GS.upd('animations',this.checked,null,'','')"/><span class="tog-track"></span></label></div>
+
+        <div class="div"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="GS.save()">💾 Apply to Game</button>
+          <button class="btn btn-ghost" onclick="GS.reset()">↺ Defaults</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📢</span>Announcement Banner</div></div>
+        <div class="fgrp"><label class="flbl">Message (shown on game splash screen)</label>
+          <input id="ann-msg" type="text" class="finp" placeholder="e.g. New questions added for Class 10!" maxlength="100"/></div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Type</label>
+            <select id="ann-type" class="finp">
+              <option value="info">ℹ️ Info (blue)</option>
+              <option value="success">✅ Success (green)</option>
+              <option value="warning">⚠️ Warning (yellow)</option>
+              <option value="new">🆕 New Feature</option>
+            </select></div>
+          <div class="fgrp fcol" style="justify-content:flex-end">
+            <button class="btn btn-primary btn-full" onclick="Ann.save()">📢 Set Banner</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="Ann.clear()">✕ Clear Banner</button>
+      </div>
+    </div>
+
+    <!-- ══ SECURITY ══ -->
+    <div class="panel" id="p-security">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🔑</span>Change Password</div>
+          <span style="font-size:.72rem;font-weight:800;color:var(--text2)">Current: <code style="color:var(--gold)">admin@quizblast</code></span>
+        </div>
+        <div class="fgrp"><label class="flbl">New Password (min 8 chars)</label>
+          <input id="sp-new" type="password" class="finp" placeholder="New password…" maxlength="40"/></div>
+        <div class="fgrp"><label class="flbl">Confirm Password</label>
+          <input id="sp-conf" type="password" class="finp" placeholder="Confirm…" maxlength="40"/></div>
+        <button class="btn btn-primary" onclick="Sec.changePass()">🔑 Update Password</button>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>📋</span>Security Log</div>
+          <button class="btn btn-ghost btn-xs" onclick="Sec.clearLog()">🗑 Clear</button>
+        </div>
+        <div class="sec-log" id="secLog">Loading…</div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>💾</span>Data Backup</div></div>
+        <p style="font-size:.8rem;color:var(--text2);font-weight:700;margin-bottom:13px">Export all data to a JSON file, or restore from a previous backup.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-success" onclick="Bk.export()">📤 Export Backup</button>
+          <label class="btn btn-ghost" style="cursor:pointer">
+            📥 Import Backup
+            <input type="file" accept=".json" style="display:none" onchange="Bk.import(this.files[0])"/>
+          </label>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <div class="danger-title">☢️ Nuclear Options</div>
+        <div class="danger-desc">These permanently delete data. There is no undo.</div>
+        <div class="danger-btns">
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeLB()">🗑 Wipe Leaderboard</button>
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeQ()">🗑 Delete Custom Questions</button>
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeAll()">☢️ Wipe Everything</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- adm-content -->
+  </div><!-- adm-body -->
+</div><!-- adminWrap -->
+
+<!-- Confirm -->
+<div id="confirmWrap">
+  <div class="confirm-box">
+    <div class="confirm-ic" id="ci">⚠️</div>
+    <div class="confirm-t"  id="ct">Are you sure?</div>
+    <div class="confirm-m"  id="cm">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-danger" id="cYes">Confirm</button>
+      <button class="btn btn-ghost" onclick="Conf.no()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ── Storage keys ────────────────────────────── */
+const K = {
+  player  : 'qb_player',
+  lb      : 'qb_lb',
+  settings: 'qb_settings',
+  gameCfg : 'qb_admin_gamecfg',
+  customQ : 'qb_custom_questions',
+  log     : 'qb_admin_log',
+  pass    : 'qb_admin_pass',
+  ann     : 'qb_announcement',
+};
+
+const SUBJECTS = ['math','english','hindi','science','computer','evs','gk','economics','space','animals'];
+const SLABELS  = {math:'📐 Math',english:'📖 English',hindi:'🇮🇳 Hindi',science:'🔬 Science',
+                  computer:'💻 Computer',evs:'🌿 EVS',gk:'🌍 GK',economics:'💰 Economics',
+                  space:'🚀 Space',animals:'🦒 Animals'};
+
+/* ── Helpers ─────────────────────────────────── */
+const $  = id => document.getElementById(id);
+const ls = {
+  get(k)   { try{return JSON.parse(localStorage.getItem(k));}catch{return null;} },
+  set(k,v) { localStorage.setItem(k,JSON.stringify(v)); },
+  del(k)   { localStorage.removeItem(k); },
+};
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg, type='ok'){
+  const t=$('toast'); t.textContent=msg; t.className=type;
+  t.style.display='block';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.style.display='none',3000);
+}
+
+/* ── Secure hash (SHA-256 via SubtleCrypto) ───── */
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ── Default password hash (pre-computed for "admin@quizblast") ── */
+const DEFAULT_PASS_PLAIN = 'admin@quizblast';
+
+/* ── AUTH ────────────────────────────────────── */
+const Auth = {
+  attempts: 0, MAX: 5, lockUntil: 0, _iv: null,
+
+  async login(){
+    const now = Date.now();
+    if(this.lockUntil > now){ $('lockBar').style.display='block'; return; }
+    const pass = $('lPass').value;
+    if(!pass){ $('lErr').textContent='Enter your password.'; return; }
+    const h = await sha256(pass);
+    const stored = ls.get(K.pass) || await sha256(DEFAULT_PASS_PLAIN);
+    if(h === stored){
+      this.attempts = 0;
+      $('loginWrap').style.display = 'none';
+      $('adminWrap').style.display = 'flex';
+      $('lErr').textContent = '';
+      $('lPass').value = '';
+      this.log('LOGIN OK');
+      Adm.init();
+    } else {
+      this.attempts++;
+      this.log('LOGIN FAIL attempt '+this.attempts);
+      if(this.attempts >= this.MAX){
+        this.lockUntil = now + 60000;
+        $('lErr').textContent = '';
+        $('lockBar').style.display = 'block';
+        let s=60; $('lockSec').textContent=s;
+        clearInterval(this._iv);
+        this._iv = setInterval(()=>{
+          s--; $('lockSec').textContent=s;
+          if(s<=0){ clearInterval(this._iv); $('lockBar').style.display='none'; this.attempts=0; }
+        },1000);
+      } else {
+        $('lErr').textContent=`❌ Wrong password. ${this.MAX-this.attempts} tries left.`;
+      }
+    }
+  },
+
+  logout(){
+    this.log('LOGOUT');
+    $('adminWrap').style.display='none';
+    $('loginWrap').style.display='flex';
+    $('lPass').value='';
+  },
+
+  log(msg){
+    let logs = ls.get(K.log) || [];
+    const type = msg.startsWith('LOGIN OK')||msg.startsWith('LOGOUT') ? 'ok'
+                : msg.startsWith('LOGIN FAIL') ? 'err' : 'warn';
+    logs.unshift({t:new Date().toLocaleString(), msg, type});
+    ls.set(K.log, logs.slice(0,200));
+  }
+};
+
+// Enter key
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && $('loginWrap').style.display!=='none') Auth.login();
+  if(e.key==='Escape') Conf.no();
+});
+
+/* ── ADMIN CORE ──────────────────────────────── */
+const Adm = {
+  init(){
+    this.clock();
+    Analytics.render();
+    PA.load();
+    QA.load();
+    GS.load();
+    Sec.loadLog();
+  },
+  tab(id){
+    document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    $('t-'+id).classList.add('on');
+    $('p-'+id).classList.add('on');
+    const fn={analytics:()=>Analytics.render(),player:()=>PA.load(),
+              questions:()=>QA.load(),security:()=>Sec.loadLog()};
+    fn[id]?.();
+  },
+  clock(){
+    setInterval(()=>{ $('admClock').textContent=new Date().toLocaleTimeString(); },1000);
+    $('admClock').textContent=new Date().toLocaleTimeString();
+  }
+};
+
+/* ── ANALYTICS ───────────────────────────────── */
+const Analytics = {
+  render(){
+    const p = ls.get(K.player) || {};
+    const sg = $('statGrid');
+    const stats=[
+      {v:p.totalGames||0,     l:'🎮 Games',     col:'--gold'},
+      {v:p.coins||0,          l:'🪙 Coins',     col:'--gold'},
+      {v:p.level||1,          l:'🏅 Level',     col:'--purple'},
+      {v:(p.bestAccuracy||0)+'%',l:'🎯 Best Acc',col:'--green'},
+      {v:p.maxStreak||0,      l:'🔥 Max Streak',col:'--orange'},
+      {v:(p.unlockedBadges||[]).length,l:'🏅 Badges',col:'--cyan'},
+      {v:p.bossWins||0,       l:'👹 Boss Wins', col:'--accent2'},
+      {v:p.pvpWins||0,        l:'⚔️ PvP Wins',  col:'--accent'},
+    ];
+    sg.innerHTML=stats.map(s=>`
+      <div class="stat-box">
+        <div class="stat-val" style="color:var(${s.col})">${s.v}</div>
+        <div class="stat-lbl">${s.l}</div>
+      </div>`).join('');
+    this.weekly(p);
+    this.subjects(p);
+    this.leaderboard();
+  },
+
+  weekly(p){
+    const wc=$('weeklyChart'); if(!wc)return;
+    const sc=Array.isArray(p.weeklyScores)&&p.weeklyScores.length===7?p.weeklyScores:[0,0,0,0,0,0,0];
+    const max=Math.max(...sc,1);
+    const days=['M','T','W','T','F','S','S'];
+    const dow=(new Date().getDay()+6)%7;
+    wc.innerHTML=days.map((d,i)=>{
+      const h=Math.round((sc[i]/max)*75)+5;
+      return `<div class="cb-wrap"><div class="cb${i===dow?' today':''}" style="height:${h}px" title="${sc[i]} pts"></div><div class="cd">${d}</div></div>`;
+    }).join('');
+  },
+
+  subjects(p){
+    const sc=$('subjChart'); if(!sc)return;
+    const ss=p.subjectStats||{};
+    sc.innerHTML=SUBJECTS.map(id=>{
+      const st=ss[id]||{played:0,correct:0,total:0};
+      const pct=st.total>0?Math.round((st.correct/st.total)*100):0;
+      const col=pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+      return `<div style="margin-bottom:11px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:.8rem;font-weight:800">${SLABELS[id]}</span>
+          <span style="font-size:.76rem;font-weight:800;color:${col}">${pct}% · ${st.played||0} games · ${st.correct||0}/${st.total||0}</span>
+        </div>
+        <div class="pbar-wrap"><div class="pbar" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+    }).join('');
+  },
+
+  leaderboard(){
+    const lb=$('lbBody'); if(!lb)return;
+    const entries=ls.get(K.lb)||[];
+    if(!entries.length){
+      lb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">No leaderboard data yet</td></tr>';
+      return;
+    }
+    lb.innerHTML=entries.slice(0,15).map((e,i)=>`
+      <tr>
+        <td><span class="bx ${i<3?'bx-gold':'bx-cyan'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
+        <td><span style="font-size:1.15rem">${e.avatar||'👤'}</span> <strong>${esc(e.name)}</strong></td>
+        <td><strong style="color:var(--gold)">${e.score} pts</strong></td>
+        <td style="color:var(--gold)">🪙 ${e.coins}</td>
+        <td><button class="btn btn-danger btn-xs" onclick="Analytics.delLBEntry(${i})">🗑</button></td>
+      </tr>`).join('');
+  },
+
+  delLBEntry(i){
+    Conf.ask('🗑','Remove Entry?','This leaderboard entry will be deleted.',()=>{
+      const lb=ls.get(K.lb)||[];
+      lb.splice(i,1); ls.set(K.lb,lb);
+      Auth.log('LB_DELETE idx='+i);
+      this.leaderboard();
+      toast('Entry removed','in');
+    });
+  }
+};
+
+/* ── PLAYER ADMIN ────────────────────────────── */
+const PA = {
+  load(){
+    const p=ls.get(K.player)||{};
+    $('pAvatar').textContent=p.avatar||'👤';
+    $('pName').textContent  =p.name||'No player yet';
+    $('pMeta').textContent  =`Level ${p.level||1} · ${p.coins||0} coins · ${p.xp||0} XP · ${p.totalGames||0} games`;
+    $('pStatus').textContent=p.name&&p.name!=='Player'?'Active':'New';
+    $('pStatus').className  ='bx '+(p.name&&p.name!=='Player'?'bx-green':'bx-purple');
+    $('e-name').value   =p.name||'';
+    $('e-coins').value  =p.coins||0;
+    $('e-xp').value     =p.xp||0;
+    $('e-level').value  =p.level||1;
+    $('e-games').value  =p.totalGames||0;
+    $('e-streak').value =p.dayStreak||0;
+  },
+
+  save(){
+    const p=ls.get(K.player)||{};
+    const name  =$('e-name').value.trim();
+    const coins =parseInt($('e-coins').value)||0;
+    const xp    =parseInt($('e-xp').value)||0;
+    const level =parseInt($('e-level').value)||1;
+    const games =parseInt($('e-games').value)||0;
+    const streak=parseInt($('e-streak').value)||0;
+    if(!name){toast('Name is required!','er');return;}
+    if(coins<0||coins>999999){toast('Coins: 0 – 999,999','er');return;}
+    if(level<1||level>999)  {toast('Level: 1 – 999','er');return;}
+    Object.assign(p,{name,coins,xp,level,totalGames:games,dayStreak:streak});
+    ls.set(K.player,p);
+    Auth.log(`PLAYER_SAVE name=${name} coins=${coins} xp=${xp} level=${level}`);
+    this.load();
+    toast('✅ Player saved!');
+  },
+
+  give(coins,xp){
+    const p=ls.get(K.player)||{};
+    if(coins){ p.coins=(p.coins||0)+coins; }
+    if(xp)   { p.xp=(p.xp||0)+xp; p.totalXP=(p.totalXP||0)+xp; }
+    ls.set(K.player,p);
+    Auth.log(`GIVE coins=${coins} xp=${xp}`);
+    this.load();
+    toast(`${coins?'+'+coins+'🪙':''}${xp?' +'+xp+'⚡':''} given!`);
+  },
+
+  unlockAvatars(){
+    Conf.ask('🎭','Unlock All 100 Avatars?','Player will get all avatars instantly.',()=>{
+      const p=ls.get(K.player)||{};
+      p.unlockedAvatars=Array.from({length:100},(_,i)=>i);
+      ls.set(K.player,p);
+      Auth.log('UNLOCK_ALL_AVATARS');
+      this.load(); toast('🎭 All avatars unlocked!');
+    });
+  },
+
+  unlockBadges(){
+    Conf.ask('🏅','Unlock All Badges?','All achievement badges will be marked earned.',()=>{
+      const p=ls.get(K.player)||{};
+      p._adminBadgesUnlocked=true;
+      ls.set(K.player,p);
+      Auth.log('UNLOCK_ALL_BADGES');
+      toast('🏅 All badges unlocked!');
+    });
+  },
+
+  resetStats(){
+    Conf.ask('⚠️','Reset Stats?','Games, accuracy, streaks and badges reset. Coins/XP kept.',()=>{
+      const p=ls.get(K.player)||{};
+      Object.assign(p,{totalGames:0,bestAccuracy:0,maxStreak:0,dayStreak:0,
+        bossWins:0,pvpWins:0,pvpLosses:0,flawlessGames:0,puristWins:0,
+        subjectStats:{},unlockedBadges:[],weeklyScores:[0,0,0,0,0,0,0]});
+      ls.set(K.player,p);
+      Auth.log('RESET_STATS');
+      this.load(); toast('Stats reset','in');
+    });
+  },
+
+  resetCoins(){
+    Conf.ask('🪙','Reset Coins to 100?','Coins will be set back to starting amount.',()=>{
+      const p=ls.get(K.player)||{};
+      p.coins=100; ls.set(K.player,p);
+      Auth.log('RESET_COINS');
+      this.load(); toast('🪙 Coins reset to 100','in');
+    });
+  },
+
+  wipe(){
+    Conf.ask('💀','DELETE Player?','ALL player data will be permanently erased.',()=>{
+      ls.del(K.player);
+      Auth.log('WIPE_PLAYER');
+      this.load(); toast('Player deleted','in');
+    });
+  }
+};
+
+/* ── QUESTION ADMIN ──────────────────────────── */
+const QA = {
+  ansIdx: 0,
+
+  getQ(cls,subj){ return (ls.get(K.customQ)||{})[`${cls}_${subj}`]||[]; },
+
+  setQ(cls,subj,arr){
+    const all=ls.get(K.customQ)||{};
+    all[`${cls}_${subj}`]=arr;
+    ls.set(K.customQ,all);
+  },
+
+  load(){
+    const cls=$('qCls').value, subj=$('qSubj').value;
+    const qs=this.getQ(cls,subj);
+    const list=$('qList');
+    if(!qs.length){
+      list.innerHTML='<div style="color:var(--text2);font-size:.82rem;font-weight:700;padding:12px 0">No custom questions yet. Click "+ Add" to create one.</div>';
+      $('qMeta').textContent='';return;
+    }
+    list.innerHTML=qs.map((q,i)=>`
+      <div class="qc">
+        <div class="qc-hd">
+          <span class="qc-num">Q${i+1}</span>
+          <span class="qc-text">${esc(q.q)}</span>
+          <div class="qc-acts">
+            <button class="btn btn-primary btn-xs" onclick="QA.openForm(${i})">✏️</button>
+            <button class="btn btn-danger btn-xs"  onclick="QA.del(${i})">🗑</button>
+          </div>
+        </div>
+        <div class="opts-grid">
+          ${q.opts.map((o,oi)=>`
+            <div class="opt-row">
+              <div class="opt-lbl opt-${['a','b','c','d'][oi]}">${'ABCD'[oi]}</div>
+              <span class="opt-txt${oi===q.ans?' correct':''}">${esc(o)}${oi===q.ans?' ✓':''}</span>
+            </div>`).join('')}
+        </div>
+        ${q.hint?`<div class="qc-hint">💡 ${esc(q.hint)}</div>`:''}
+      </div>`).join('');
+    $('qMeta').textContent=`${qs.length} custom question${qs.length!==1?'s':''} · Class ${cls} ${SLABELS[subj]}`;
+  },
+
+  openForm(idx){
+    const cls=$('qCls').value, subj=$('qSubj').value;
+    this.ansIdx=0;
+    if(idx>=0){
+      const q=this.getQ(cls,subj)[idx];
+      if(!q)return;
+      $('qf-q').value=q.q; $('qf-hint').value=q.hint||'';
+      $('qf-a').value=q.opts[0]||''; $('qf-b').value=q.opts[1]||'';
+      $('qf-c').value=q.opts[2]||''; $('qf-d').value=q.opts[3]||'';
+      this.ansIdx=q.ans;
+      $('qfIcon').textContent='✏️'; $('qfTitle').textContent='Edit Question';
+    } else {
+      $('qf-q').value=''; $('qf-hint').value='';
+      $('qf-a').value=''; $('qf-b').value='';
+      $('qf-c').value=''; $('qf-d').value='';
+      $('qfIcon').textContent='➕'; $('qfTitle').textContent='Add Question';
+    }
+    $('qf-idx').value=idx;
+    this.syncMarks();
+    $('qForm').style.display='block';
+    $('qForm').scrollIntoView({behavior:'smooth',block:'start'});
+  },
+
+  setAns(i){ this.ansIdx=i; this.syncMarks(); },
+  syncMarks(){ [0,1,2,3].forEach(i=>$('qf-cm'+i).classList.toggle('on',i===this.ansIdx)); },
+
+  save(){
+    const q=$('qf-q').value.trim();
+    if(!q){toast('Question text required!','er');return;}
+    const opts=[$('qf-a'),$('qf-b'),$('qf-c'),$('qf-d')].map(i=>i.value.trim());
+    if(opts.some(o=>!o)){toast('All 4 options required!','er');return;}
+    const hint=$('qf-hint').value.trim();
+    const obj={q,opts,ans:this.ansIdx,hint};
+    const cls=$('qCls').value, subj=$('qSubj').value;
+    const arr=this.getQ(cls,subj);
+    const idx=parseInt($('qf-idx').value);
+    if(idx>=0) arr[idx]=obj; else arr.push(obj);
+    this.setQ(cls,subj,arr);
+    Auth.log(`Q_SAVE cls=${cls} subj=${subj} idx=${idx>=0?idx:'new'}`);
+    this.closeForm(); this.load();
+    toast(idx>=0?'✅ Question updated!':'✅ Question added!');
+  },
+
+  del(i){
+    Conf.ask('🗑','Delete Question?','This question will be removed permanently.',()=>{
+      const cls=$('qCls').value, subj=$('qSubj').value;
+      const arr=this.getQ(cls,subj);
+      arr.splice(i,1); this.setQ(cls,subj,arr);
+      Auth.log(`Q_DEL cls=${cls} subj=${subj} idx=${i}`);
+      this.load(); toast('Question deleted','in');
+    });
+  },
+
+  closeForm(){ $('qForm').style.display='none'; }
+};
+
+/* ── GAME SETTINGS ───────────────────────────── */
+const GS = {
+  DEF:{timerSeconds:10,coinCorrect:10,coinWrong:5,xpCorrect:10,
+       questionsPerQuiz:10,dailyReward:200,autoHint:false,
+       rewardEnabled:true,animations:true},
+
+  get(){ return {...this.DEF,...(ls.get(K.gameCfg)||{})}; },
+
+  load(){
+    const c=this.get();
+    const set=(id,v,sfx='',pre='')=>{
+      const el=$(id); if(!el)return; el.value=v;
+      const lbl=$(id+'-val'); if(lbl) lbl.textContent=(pre||'')+v+(sfx||'');
+    };
+    set('gs-timer', c.timerSeconds,'s');
+    set('gs-cc',    c.coinCorrect);
+    set('gs-cw',    c.coinWrong,'','-');
+    set('gs-xp',    c.xpCorrect);
+    set('gs-qn',    c.questionsPerQuiz);
+    set('gs-dr',    c.dailyReward);
+    const ah=$('gs-ah'); if(ah) ah.checked=!!c.autoHint;
+    const rw=$('gs-rw'); if(rw) rw.checked=!!c.rewardEnabled;
+    const an=$('gs-anim'); if(an) an.checked=!!c.animations;
+  },
+
+  upd(key,val,el,lblId,sfx,pre){
+    const c=this.get(); c[key]=val; ls.set(K.gameCfg,c);
+    if(lblId){ const l=$(lblId); if(l) l.textContent=(pre==='prefix'?'-':'')+val+(sfx||''); }
+  },
+
+  save(){
+    const c=this.get();
+    c.autoHint  =$('gs-ah').checked;
+    c.rewardEnabled=$('gs-rw').checked;
+    c.animations=$('gs-anim').checked;
+    ls.set(K.gameCfg,c);
+    // Also push to main game settings so the game picks it up immediately
+    const gs=ls.get(K.settings)||{};
+    gs.timerSeconds=c.timerSeconds;
+    gs.autoHint=c.autoHint;
+    gs.animations=c.animations;
+    ls.set(K.settings,gs);
+    Auth.log('GAME_SETTINGS_SAVED: '+JSON.stringify(c));
+    toast('✅ Settings applied to game!');
+  },
+
+  reset(){
+    ls.del(K.gameCfg); this.load();
+    Auth.log('GAME_SETTINGS_RESET');
+    toast('Settings reset to defaults','in');
+  }
+};
+
+/* ── ANNOUNCEMENT ────────────────────────────── */
+const Ann = {
+  save(){
+    const msg=$('ann-msg').value.trim();
+    const type=$('ann-type').value;
+    if(!msg){toast('Message cannot be empty!','er');return;}
+    ls.set(K.ann,{msg,type,date:new Date().toISOString()});
+    Auth.log('ANN_SET: '+msg);
+    toast('📢 Announcement set!');
+  },
+  clear(){
+    ls.del(K.ann);
+    $('ann-msg').value='';
+    toast('Announcement cleared','in');
+  }
+};
+
+/* ── SECURITY ────────────────────────────────── */
+const Sec = {
+  async changePass(){
+    const np=$('sp-new').value;
+    const cp=$('sp-conf').value;
+    if(!np||!cp){toast('Fill both fields!','er');return;}
+    if(np!==cp){toast('Passwords do not match!','er');return;}
+    if(np.length<8){toast('Min 8 characters required!','er');return;}
+    const h=await sha256(np);
+    ls.set(K.pass,h);
+    $('sp-new').value=''; $('sp-conf').value='';
+    Auth.log('PASSWORD_CHANGED');
+    toast('✅ Password updated!');
+  },
+
+  loadLog(){
+    const sl=$('secLog'); if(!sl)return;
+    const logs=ls.get(K.log)||[];
+    if(!logs.length){sl.innerHTML='<span style="color:var(--green)">No events yet.</span>';return;}
+    sl.innerHTML=logs.map(l=>`<div class="log-line ${l.type||'warn'}">[${l.t}] ${l.msg}</div>`).join('');
+  },
+
+  clearLog(){
+    Conf.ask('🗑','Clear Log?','All security events will be deleted.',()=>{
+      ls.del(K.log); this.loadLog(); toast('Log cleared','in');
+    });
+  },
+
+  wipeLB(){
+    Conf.ask('🗑','Wipe Leaderboard?','All scores deleted.',()=>{
+      ls.del(K.lb); Auth.log('WIPE_LB');
+      Analytics.leaderboard(); toast('Leaderboard wiped','in');
+    });
+  },
+
+  wipeQ(){
+    Conf.ask('🗑','Delete Custom Questions?','All custom questions deleted.',()=>{
+      ls.del(K.customQ); Auth.log('WIPE_CUSTOM_Q');
+      QA.load(); toast('Custom questions deleted','in');
+    });
+  },
+
+  wipeAll(){
+    Conf.ask('☢️','WIPE ALL DATA?','Player, leaderboard, questions, settings — all gone. Only admin credentials kept.',()=>{
+      const keep=[K.pass, K.log];
+      Object.keys(localStorage).filter(k=>!keep.includes(k)).forEach(k=>localStorage.removeItem(k));
+      Auth.log('WIPE_ALL');
+      Adm.init(); toast('All data wiped','in');
+    });
+  }
+};
+
+/* ── BACKUP ──────────────────────────────────── */
+const Bk = {
+  export(){
+    const data={
+      v:'3.1', exportedAt:new Date().toISOString(),
+      player     : ls.get(K.player),
+      leaderboard: ls.get(K.lb),
+      settings   : ls.get(K.settings),
+      gameCfg    : ls.get(K.gameCfg),
+      customQ    : ls.get(K.customQ),
+    };
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`quizblast_${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    Auth.log('EXPORT');
+    toast('📤 Backup exported!');
+  },
+
+  import(file){
+    if(!file)return;
+    Conf.ask('📥','Import Backup?','This overwrites current player data, questions and settings.',()=>{
+      const rd=new FileReader();
+      rd.onload=e=>{
+        try{
+          const d=JSON.parse(e.target.result);
+          if(d.v!=='3.1'){toast('Incompatible backup version!','er');return;}
+          if(d.player)      ls.set(K.player,      d.player);
+          if(d.leaderboard) ls.set(K.lb,           d.leaderboard);
+          if(d.settings)    ls.set(K.settings,     d.settings);
+          if(d.gameCfg)     ls.set(K.gameCfg,      d.gameCfg);
+          if(d.customQ)     ls.set(K.customQ,       d.customQ);
+          Auth.log('IMPORT file='+file.name);
+          Adm.init(); toast('📥 Backup restored!');
+        }catch{toast('Invalid or corrupt file!','er');}
+      };
+      rd.readAsText(file);
+    });
+  }
+};
+
+/* ── CONFIRM DIALOG ──────────────────────────── */
+const Conf = {
+  _cb:null,
+  ask(ic,title,msg,cb){
+    $('ci').textContent=ic; $('ct').textContent=title; $('cm').textContent=msg;
+    this._cb=cb; $('confirmWrap').classList.add('on');
+  },
+  no(){ $('confirmWrap').classList.remove('on'); this._cb=null; }
+};
+$('cYes').onclick=()=>{ if(Conf._cb)Conf._cb(); Conf.no(); };
+</script>
+</body>
+</html>
