@@ -288,12 +288,7 @@ input:checked+.tog-track::before{transform:translateX(21px);}
     <span class="login-logo">🛡️</span>
     <div class="login-title">Admin Panel</div>
     <div class="login-sub">QuizBlast · Owner Access Only</div>
-    <div style="background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);
-                border-radius:8px;padding:10px 14px;margin-bottom:18px;text-align:left">
-      <div style="font-size:.72rem;font-weight:800;color:#a78bfa;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Default Password</div>
-      <div style="font-family:monospace;font-size:.9rem;font-weight:800;color:#e8eaf6;letter-spacing:1px">admin@quizblast</div>
-      <div style="font-size:.68rem;color:#9ba3d0;font-weight:700;margin-top:4px">Change it in Security tab after login</div>
-    </div>
+
     <input id="lPass" type="password" class="inp" placeholder="Admin Password" autocomplete="new-password" maxlength="40"/>
     <div class="login-err" id="lErr"></div>
     <button class="btn btn-primary btn-full" onclick="Auth.login()">🔓 Enter Panel</button>
@@ -531,9 +526,7 @@ input:checked+.tog-track::before{transform:translateX(21px);}
     <!-- ══ SECURITY ══ -->
     <div class="panel" id="p-security">
       <div class="card">
-        <div class="card-hd"><div class="card-hd-left"><span>🔑</span>Change Password</div>
-          <span style="font-size:.72rem;font-weight:800;color:var(--text2)">Current: <code style="color:var(--gold)">admin@quizblast</code></span>
-        </div>
+        <div class="card-hd"><div class="card-hd-left"><span>🔑</span>Change Password</div></div>
         <div class="fgrp"><label class="flbl">New Password (min 8 chars)</label>
           <input id="sp-new" type="password" class="finp" placeholder="New password…" maxlength="40"/></div>
         <div class="fgrp"><label class="flbl">Confirm Password</label>
