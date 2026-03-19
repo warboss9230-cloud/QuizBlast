@@ -386,7 +386,7 @@ const Sound = (() => {
 ════════════════════════════════════════════════════ */
 const Settings = (() => {
   const KEY='qb_settings';
-  let cfg={theme:'dark',fontSize:'medium',sound:true,autoHint:false,animations:true,timerSeconds:10};
+  let cfg={theme:'dark',fontSize:'medium',sound:true,autoHint:false,animations:true,timerSeconds:10,rewardEvery:5};
   function load(){
     try{const r=localStorage.getItem(KEY);if(r)cfg={...cfg,...JSON.parse(r)};}catch(e){}
     applyAll();
@@ -421,8 +421,9 @@ const Settings = (() => {
       <div class="ssg-item"><div class="ssg-val">${(p.unlockedAvatars||[]).length}</div><div class="ssg-lbl">🎭 Avatars</div></div>`;
     Profile.initEdit();
     $('settingsOverlay').style.display='flex';
+    document.body.classList.add('overlay-open');
   }
-  function close(){save();applyAll();$('settingsOverlay').style.display='none';}
+  function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');}
   function applyTheme(v){cfg.theme=v?'dark':'light';document.documentElement.setAttribute('data-theme',cfg.theme);persist();}
   function applySound(v){cfg.sound=v;Sound.setMuted(!v);persist();}
   function applyAnimations(v){cfg.animations=v;if(!v)document.documentElement.setAttribute('data-no-anim','');else document.documentElement.removeAttribute('data-no-anim');persist();}
@@ -430,6 +431,12 @@ const Settings = (() => {
   function setTimer(s){cfg.timerSeconds=s;[5,10,15,30].forEach(t=>{const b=$('ts-'+t);if(b)b.classList.toggle('active',t===s);});persist();}
   function getTimerSeconds(){return cfg.timerSeconds||10;}
   function isAutoHint(){return!!cfg.autoHint;}
+  function getRewardEvery(){return cfg.rewardEvery||5;}
+  function setRewardEvery(v){
+    cfg.rewardEvery=v;persist();
+    [5,10,15,20].forEach(n=>{const b=$('re-'+n);if(b)b.classList.toggle('active',n===v);});
+    const rev=$('rewardEveryVal');if(rev)rev.textContent=v;
+  }
   function resetProgress(){
     if(!confirm('Reset ALL progress? This cannot be undone.'))return;
     // Clear both plain and encrypted keys
@@ -439,7 +446,7 @@ const Settings = (() => {
     });
     location.reload();
   }
-  return{load,save,open,close,applyTheme,applySound,applyAnimations,setFontSize,setTimer,getTimerSeconds,isAutoHint,resetProgress};
+  return{load,save,open,close,applyTheme,applySound,applyAnimations,setFontSize,setTimer,getTimerSeconds,isAutoHint,getRewardEvery,setRewardEvery,resetProgress};
 })();
 
 /* ════════════════════════════════════════════════════
@@ -1957,22 +1964,31 @@ const AdminCfg = (() => {
     // Just clear the cache so next load picks up latest custom questions
     try{ if(typeof QuestionLoader!=='undefined') QuestionLoader.clearCache(); }catch(e){}
   }
-  // Show announcement banner if set
+  // Show announcement banner below home-header
   function showAnnouncement(){
     try{
       const ann = JSON.parse(localStorage.getItem(ANNKEY));
       if(!ann||!ann.msg) return;
       const colors={info:'#22d3ee',success:'#4ade80',warning:'#ffd700','new':'#a78bfa'};
+      const color = colors[ann.type]||colors.info;
       const el = document.createElement('div');
-      el.style.cssText=`position:fixed;top:0;left:0;right:0;z-index:1000;
-        padding:9px 16px;text-align:center;font-family:'Nunito',sans-serif;
-        font-size:.82rem;font-weight:800;cursor:pointer;
-        background:${colors[ann.type]||colors.info}22;
-        border-bottom:2px solid ${colors[ann.type]||colors.info};
-        color:${colors[ann.type]||colors.info};`;
-      el.textContent = ann.msg;
+      el.id = 'announcementBanner';
+      el.style.cssText=
+        'display:flex;align-items:center;justify-content:space-between;gap:10px;'+
+        'padding:8px 14px;cursor:pointer;'+
+        `background:${color}18;border-bottom:2px solid ${color};`+
+        `color:${color};font-family:var(--fb);font-size:.8rem;font-weight:800;`;
+      el.innerHTML=`<span>${ann.msg}</span><span style="font-size:1rem;opacity:.7">✕</span>`;
       el.onclick = ()=>el.remove();
-      document.body.prepend(el);
+      // Insert after home-header inside screen-select
+      const header = document.querySelector('#screen-select .home-header');
+      if(header && header.parentNode){
+        header.parentNode.insertBefore(el, header.nextSibling);
+      } else {
+        // Fallback: after daily banner
+        const daily = document.getElementById('dailyBanner');
+        if(daily && daily.parentNode) daily.parentNode.insertBefore(el, daily);
+      }
     }catch(e){}
   }
   return { load, get, mergeQuestions, showAnnouncement };
