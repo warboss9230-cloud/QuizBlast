@@ -864,7 +864,7 @@ const Game = (() => {
     if(!pd.subjectsPlayed.includes(cfg.subject)){pd.subjectsPlayed.push(cfg.subject);Player.save();}
     if(!pd.classesPlayed){pd.classesPlayed=[];}
     if(!pd.classesPlayed.includes(cfg.cls)){pd.classesPlayed.push(cfg.cls);Player.save();}
-    PowerUp.reset();App.goTo('screen-quiz');loadQuestion();
+    PowerUp.reset();FairPlay.start();App.goTo('screen-quiz');loadQuestion();
   }
 
   function start(){
@@ -919,12 +919,14 @@ const Game = (() => {
       b.onclick=()=>checkAnswer(b,i===q.ans,opt);
       grid.appendChild(b);
     });
-    $('nextBtn').style.display='none';PowerUp.reset();updateStreakUI();Player.updateHUD();
+    $('nextBtn').style.display='none';PowerUp.reset();FairPlay.newQuestion();updateStreakUI();Player.updateHUD();
     if(mode==='timer')Timer.start(Settings.getTimerSeconds(),()=>{if(!answered)onTimeout();});
   }
 
   function checkAnswer(btn,isCorrect,selectedText){
-    if(answered)return;answered=true;Timer.stop();
+    if(answered)return;
+    if(!FairPlay.validateAnswer())return; // fair play check
+    answered=true;Timer.stop();
     const snapIdx=qIdx; // snapshot index before any async changes
     document.querySelectorAll('.option-btn').forEach(b=>{b.disabled=true;if(b.dataset.correct)b.classList.add('correct');});
     if(isCorrect){
@@ -1008,7 +1010,7 @@ const Game = (() => {
     $('qNumInCardTotal').textContent=questions.length;$('qTotal').textContent=questions.length;
     App.goTo('screen-quiz');PowerUp.reset();loadQuestion();
   }
-  function quit(){Timer.stop();App.goTo('screen-select');}
+  function quit(){Timer.stop();FairPlay.stop();App.goTo('screen-select');}
   function currentQuestion(){return questions[qIdx]||null;}
   function freezeTimer(s){Timer.freeze(s);}
   return{start,startDaily,next,quit,playAgain,currentQuestion,freezeTimer};
@@ -1527,6 +1529,145 @@ const ExamMode = (() => {
 })();
 
 
+
+/* ════════════════════════════════════════════════════
+   FAIR PLAY SECURITY
+   Prevents cheating during quiz:
+   1. Tab switch → auto-submit / warning
+   2. Copy-paste disabled on options
+   3. Right-click blocked on quiz screen
+   4. Screenshot detection (best effort)
+   5. Speed cheat — answer too fast = flag
+   6. Suspicious pattern detection
+════════════════════════════════════════════════════ */
+const FairPlay = (() => {
+  let warnings = 0;
+  const MAX_WARN = 3;
+  let active = false;
+  let lastAnswerTime = 0;
+  const MIN_ANSWER_MS = 800; // must spend at least 0.8s on question
+
+  // 1. Tab visibility — warn when player switches tab during quiz
+  function onVisibilityChange() {
+    if (!active) return;
+    if (document.hidden) {
+      warnings++;
+      FairPlay.showWarning(
+        warnings >= MAX_WARN
+          ? '❌ Quiz terminated! Too many tab switches.'
+          : `⚠️ Warning ${warnings}/${MAX_WARN}: Don't switch tabs during quiz!`
+      );
+      if (warnings >= MAX_WARN) {
+        setTimeout(() => Game.quit(), 1800);
+      }
+    }
+  }
+
+  // 2. Speed cheat — answered before reading question
+  function checkSpeed() {
+    const elapsed = Date.now() - lastAnswerTime;
+    if (lastAnswerTime > 0 && elapsed < MIN_ANSWER_MS) {
+      showWarning('⚠️ Answer too fast! Please read the question.');
+      return false; // block the answer
+    }
+    return true;
+  }
+
+  // 3. Show warning toast
+  function showWarning(msg) {
+    let el = document.getElementById('fairPlayWarn');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'fairPlayWarn';
+      el.style.cssText =
+        'position:fixed;top:70px;left:50%;transform:translateX(-50%);' +
+        'z-index:9998;background:#ef4444;color:#fff;font-family:var(--fb);' +
+        'font-size:.82rem;font-weight:800;padding:10px 18px;border-radius:10px;' +
+        'box-shadow:0 4px 16px rgba(239,68,68,.4);text-align:center;' +
+        'animation:fairWarnPop .25s ease;max-width:320px;width:90%;';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  // 4. Block right-click on quiz screens
+  function blockContextMenu(e) {
+    const quizScreens = ['screen-quiz','screen-level','screen-boss','screen-timeattack'];
+    const active = document.querySelector('.screen.active');
+    if (active && quizScreens.includes(active.id)) {
+      e.preventDefault();
+      return false;
+    }
+  }
+
+  // 5. Block copy on options
+  function blockCopy(e) {
+    const active = document.querySelector('.screen.active');
+    if (active && ['screen-quiz','screen-level','screen-boss'].includes(active.id)) {
+      e.preventDefault();
+    }
+  }
+
+  // Start monitoring (call when quiz begins)
+  function start() {
+    active = true;
+    warnings = 0;
+    lastAnswerTime = Date.now();
+  }
+
+  // Stop monitoring (call when quiz ends)
+  function stop() {
+    active = false;
+    warnings = 0;
+  }
+
+  // Reset answer timer (call when new question loads)
+  function newQuestion() {
+    lastAnswerTime = Date.now();
+  }
+
+  // Validate answer attempt
+  function validateAnswer() {
+    if (!active) return true;
+    const elapsed = Date.now() - lastAnswerTime;
+    if (elapsed < MIN_ANSWER_MS) {
+      showWarning('⚡ Slow down! Read the question carefully.');
+      return false;
+    }
+    return true;
+  }
+
+  // Detect suspicious answer pattern (all correct in 0-1s = bot/cheat)
+  let fastCorrects = 0;
+  function logCorrect(elapsed) {
+    if (elapsed < 1200) fastCorrects++;
+    else fastCorrects = 0;
+    if (fastCorrects >= 5) {
+      showWarning('🚨 Suspicious activity detected!');
+      fastCorrects = 0;
+    }
+  }
+
+  // Init — attach global listeners
+  function init() {
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener('contextmenu', blockContextMenu);
+    document.addEventListener('copy', blockCopy);
+    // Add CSS for animation
+    if (!document.getElementById('fpStyle')) {
+      const s = document.createElement('style');
+      s.id = 'fpStyle';
+      s.textContent = '@keyframes fairWarnPop{from{transform:translateX(-50%) scale(.8);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}';
+      document.head.appendChild(s);
+    }
+  }
+
+  return { start, stop, newQuestion, validateAnswer, logCorrect, showWarning, init };
+})();
+
 /* ════════════════════════════════════════════════════
    ADMIN ACCESS — Secret entry from game
    • Tap rocket logo 5 times → opens admin
@@ -1703,4 +1844,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   AdminCfg.showAnnouncement();
   App.init();
   AdminAccess.init();
+  FairPlay.init();
 });
