@@ -90,9 +90,14 @@ body {
   width:42px; height:42px; border-radius:50%;
   background:var(--card); border:2px solid var(--border);
   font-size:1.15rem; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
+  display:none; align-items:center; justify-content:center;
   box-shadow:0 4px 16px rgba(0,0,0,.3); transition:var(--tr);
   backdrop-filter:blur(8px);
+}
+/* Show only when body has .home-visible class */
+body.home-visible .fab-settings,
+body.home-visible .fab-sound {
+  display:flex;
 }
 .fab-settings { top:14px; right:16px; }
 .fab-settings:hover { background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(60deg) scale(1.08); }
@@ -830,3 +835,28 @@ input:checked+.toggle-track::before { transform:translateX(20px); }
   transition: var(--tr);
 }
 .sr-nav-btn:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.3); }
+
+/* ── Class & Subject Picker Screen ────────────── */
+.picker-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+.picker-mode-lbl {
+  font-size: .74rem;
+  font-weight: 800;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.picker-mode-badge {
+  background: rgba(108,99,255,.15);
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: .78rem;
+  font-weight: 800;
+  flex: 1;
+}
