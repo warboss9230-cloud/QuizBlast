@@ -603,7 +603,7 @@ const SelectScreen = (() => {
     SUBJECTS.forEach(s=>{
       const b=document.createElement('button');b.className='subject-btn'+(s.id===subject?' active':'');
       b.innerHTML=`<span class="si">${s.icon}</span>${s.label}`;
-      b.onclick=()=>{subject=s.id;sg.querySelectorAll('.subject-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');};
+      b.onclick=()=>{subject=s.id;sg.querySelectorAll('.subject-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');QuestionLoader.preload(cls,s.id);};
       sg.appendChild(b);
     });
     const mg=$('modeGrid');mg.innerHTML='';
@@ -838,10 +838,13 @@ const Game = (() => {
   let qStartTime=0;
 
   function prepQ(raw){const c=raw.opts[raw.ans],sh=shuffle(raw.opts);return{q:raw.q,opts:sh,ans:sh.indexOf(c),hint:raw.hint};}
-  function loadQs(){
-    const sel=SelectScreen.get(),bank=(BANK[sel.cls]&&BANK[sel.cls][sel.subject])||[];
+  // Sync fallback (used when async not available)
+  function loadQsSync(){
+    const sel=SelectScreen.get();
+    const bank=(BANK[sel.cls]&&BANK[sel.cls][sel.subject])||[];
     return shuffle(bank).slice(0,10).map(prepQ);
   }
+  function loadQs(){ return loadQsSync(); }
 
   function _init(qs,ocfg){
     cfg=ocfg||SelectScreen.get();
@@ -867,16 +870,32 @@ const Game = (() => {
   function start(){
     const sel=SelectScreen.get();
     if(sel.mode==='level'){LevelMode.start();return;}
-    _init(loadQs());
+    // Show loading indicator briefly, then load questions
+    const loadBtn=document.querySelector('#screen-picker .btn-primary');
+    if(loadBtn){ loadBtn.textContent='Loading…'; loadBtn.disabled=true; }
+    QuestionLoader.load(sel.cls, sel.subject).then(bank=>{
+      if(loadBtn){ loadBtn.textContent='🚀 Launch Quiz!'; loadBtn.disabled=false; }
+      const qs=shuffle(bank).slice(0,10).map(prepQ);
+      if(!qs.length){ alert('No questions found!'); return; }
+      _init(qs);
+    }).catch(()=>{
+      if(loadBtn){ loadBtn.textContent='🚀 Launch Quiz!'; loadBtn.disabled=false; }
+      _init(loadQsSync());
+    });
   }
 
   function startDaily(){
     const p=Player.get();
     if(p.dailyLastDate===today()){alert('✅ Daily challenge already done!\nCome back tomorrow.');return;}
-    let pool=[];
-    Object.values(BANK[6]||BANK[1]).forEach(arr=>pool.push(...arr));
-    const qs=shuffle(pool).slice(0,10).map(prepQ);
-    _init(qs,{cls:6,subject:'gk',mode:'timer'});
+    QuestionLoader.load(6,'gk').then(bank=>{
+      const qs=shuffle(bank).slice(0,10).map(prepQ);
+      _init(qs,{cls:6,subject:'gk',mode:'timer'});
+    }).catch(()=>{
+      let pool=[];
+      Object.values(BANK[6]||BANK[1]).forEach(arr=>pool.push(...arr));
+      const qs=shuffle(pool).slice(0,10).map(prepQ);
+      _init(qs,{cls:6,subject:'gk',mode:'timer'});
+    });
   }
 
   function loadQuestion(){
@@ -1585,6 +1604,50 @@ const AdminAccess = (() => {
   }
 
   return { tap, init };
+})();
+
+
+/* ════════════════════════════════════════════════════
+   QUESTION LOADER
+   Primary  : questions/classX/subject.json
+   Fallback : BANK object (built-in)
+════════════════════════════════════════════════════ */
+const QuestionLoader = (() => {
+  const cache = {}; // cache loaded JSON to avoid re-fetching
+
+  async function load(cls, subj) {
+    const key = `${cls}_${subj}`;
+    if (cache[key]) return cache[key];
+
+    try {
+      const res = await fetch(`questions/class${cls}/${subj}.json`);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length) {
+        cache[key] = data;
+        return data;
+      }
+      throw new Error('empty');
+    } catch (e) {
+      // Fallback to built-in BANK
+      const fallback = (BANK[cls] && BANK[cls][subj]) || [];
+      cache[key] = fallback;
+      return fallback;
+    }
+  }
+
+  // Preload current selection silently
+  function preload(cls, subj) {
+    load(cls, subj).catch(() => {});
+  }
+
+  // Clear cache (call after admin adds custom questions)
+  function clearCache(cls, subj) {
+    if (cls && subj) delete cache[`${cls}_${subj}`];
+    else Object.keys(cache).forEach(k => delete cache[k]);
+  }
+
+  return { load, preload, clearCache };
 })();
 
 /* ── Admin Config Integration ──────────────────── */
