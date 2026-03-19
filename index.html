@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>QuizBlast 🚀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="QuizBlast"/>
+  <meta name="theme-color" content="#6c63ff"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+</head>
+<body>
+
+<!-- ⚙️ Fixed settings button (all screens) -->
+<button class="fab-settings" onclick="Settings.open()" title="Settings">⚙️</button>
+<!-- 🔊 Fixed sound button -->
+<button class="fab-sound" id="soundToggle" onclick="Sound.toggle()" title="Sound">🔊</button>
+<!-- 🪙 Coin float animation -->
+<div id="coinAnim" class="coin-anim" style="display:none"></div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — SPLASH
+══════════════════════════════════════ -->
+<div id="screen-splash" class="screen active">
+  <div class="splash-bg"><div class="star-field" id="starField"></div></div>
+
+  <!-- NEW PLAYER view (shown when no profile) -->
+  <div id="splashNew" class="splash-content">
+    <div class="logo-wrap">
+      <span class="logo-icon" id="logoTap" style="cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent">🚀</span>
+      <h1 class="logo-text">QuizBlast</h1>
+      <p class="logo-sub">Learn · Play · Level Up</p>
+    </div>
+    <button class="btn btn-primary btn-xl pulse-btn" onclick="App.startPlaying()">▶ Start Playing</button>
+    <button class="btn btn-ghost mt-sm" onclick="App.goTo('screen-leaderboard')">🏆 Leaderboard</button>
+    <button class="btn btn-ghost mt-sm" onclick="App.goTo('screen-progress')">📊 My Progress</button>
+  </div>
+
+  <!-- Hidden admin lock — bottom right corner, tap logo 5x OR tap this -->
+  <button id="adminLockBtn"
+    title="" aria-hidden="true"
+    style="position:absolute;bottom:16px;right:16px;z-index:10;
+           width:34px;height:34px;border-radius:50%;
+           background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+           font-size:.9rem;cursor:pointer;opacity:.28;color:#9ba3d0;
+           transition:opacity .3s,transform .3s;
+           user-select:none;-webkit-user-select:none;
+           -webkit-tap-highlight-color:transparent;
+           touch-action:manipulation">🔒</button>
+
+  <!-- RETURNING PLAYER view -->
+  <div id="splashReturn" class="splash-return" style="display:none">
+
+    <!-- Top: mini logo -->
+    <div class="sr-logo">
+      <span class="sr-logo-icon">🚀</span>
+      <span class="sr-logo-text">QuizBlast</span>
+    </div>
+
+    <!-- Player card -->
+    <div class="sr-player-card card">
+      <div class="sr-avatar" id="srAvatar">🐉</div>
+      <div class="sr-info">
+        <div class="sr-name" id="srName">Player</div>
+        <div class="sr-level">Level <span id="srLevel">1</span></div>
+        <div class="sr-xp-track"><div class="sr-xp-fill" id="srXpBar"></div></div>
+      </div>
+      <div class="sr-coins">🪙<span id="srCoins">0</span></div>
+    </div>
+
+    <!-- Quick stats row -->
+    <div class="sr-stats-row">
+      <div class="sr-stat"><div class="sr-stat-val" id="srGames">0</div><div class="sr-stat-lbl">Games</div></div>
+      <div class="sr-stat"><div class="sr-stat-val" id="srStreak">0</div><div class="sr-stat-lbl">🔥 Streak</div></div>
+      <div class="sr-stat"><div class="sr-stat-val" id="srBadges">0</div><div class="sr-stat-lbl">🏅 Badges</div></div>
+    </div>
+
+    <!-- Main play button -->
+    <button class="btn btn-primary btn-xl pulse-btn sr-play-btn" onclick="App.startPlaying()">▶ Continue Playing</button>
+
+    <!-- Quick launch game modes -->
+    <p class="sr-modes-label">Quick Play</p>
+    <div class="sr-modes-grid">
+      <button class="sr-mode-btn" onclick="App.quickLaunch('freeplay')">
+        <span class="sr-mode-icon">🎮</span>
+        <span class="sr-mode-name">Free Play</span>
+      </button>
+      <button class="sr-mode-btn" onclick="App.quickLaunch('timer')">
+        <span class="sr-mode-icon">⏱️</span>
+        <span class="sr-mode-name">Timer</span>
+      </button>
+      <button class="sr-mode-btn" onclick="App.quickLaunch('level')">
+        <span class="sr-mode-icon">🏆</span>
+        <span class="sr-mode-name">Level</span>
+      </button>
+      <button class="sr-mode-btn" onclick="App.quickLaunch('timeattack')">
+        <span class="sr-mode-icon">⚡</span>
+        <span class="sr-mode-name">Time Attack</span>
+      </button>
+      <button class="sr-mode-btn" onclick="BattleHub.openBoss()">
+        <span class="sr-mode-icon">👹</span>
+        <span class="sr-mode-name">Boss</span>
+      </button>
+      <button class="sr-mode-btn" onclick="BattleHub.openPvP()">
+        <span class="sr-mode-icon">⚔️</span>
+        <span class="sr-mode-name">PvP</span>
+      </button>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="sr-nav-row">
+      <button class="sr-nav-btn" onclick="App.goTo('screen-leaderboard')">🏆 Leaderboard</button>
+      <button class="sr-nav-btn" onclick="App.goTo('screen-progress')">📊 Progress</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — PROFILE SETUP (new players)
+══════════════════════════════════════ -->
+<div id="screen-profile" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
+    <h2>Create Profile</h2>
+    <div class="w38"></div>
+  </div>
+  <div class="profile-card card">
+    <div class="avatar-preview" id="avatarPreview">🐉</div>
+    <input id="playerNameInput" type="text" class="name-input" placeholder="Enter your name…" maxlength="20"/>
+    <p class="sect-label" style="margin-top:14px">Choose Your Avatar</p>
+    <p class="avatar-hint">🔒 Locked avatars cost <strong>5,000 🪙</strong></p>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <button class="btn btn-primary btn-full mt" onclick="Profile.save()">Let's Play! →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — HOME / SELECT
+     • Player header (sticky)
+     • Daily Challenge
+     • Class + Subject
+     • Game Modes (Free Play / Timer / Level)
+     • Battle Modes (Boss / PvP)
+     • Launch button
+══════════════════════════════════════ -->
+<div id="screen-select" class="screen">
+
+  <!-- Sticky player header -->
+  <div class="home-header">
+    <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
+    <!-- Player pill — tap to edit profile -->
+    <button class="player-pill" onclick="Settings.open()" title="Edit Profile">
+      <span class="pp-avatar" id="hudAvatar">🐉</span>
+      <div class="pp-info">
+        <span class="pp-name" id="hudName">Player</span>
+        <div class="pp-xp-track"><div class="pp-xp-fill" id="xpBar"></div></div>
+        <span class="pp-level">Lv <span id="hudLevel">1</span></span>
+      </div>
+    </button>
+    <!-- Coins -->
+    <div class="coins-chip">
+      <span>🪙</span><span id="hudCoins">0</span>
+    </div>
+  </div>
+
+  <!-- Daily Challenge -->
+  <div class="daily-card" id="dailyBanner" onclick="Game.startDaily()">
+    <div class="daily-bolt">⚡</div>
+    <div class="daily-text">
+      <div class="daily-title">Daily Challenge</div>
+      <div class="daily-sub" id="dailySub">Today's quiz · Tap to play!</div>
+    </div>
+    <div class="daily-badge">+200🪙</div>
+  </div>
+
+  <!-- Class selector -->
+  <p class="sect-label mt">Select Class</p>
+  <div class="class-grid" id="classGrid"></div>
+
+  <!-- Subject selector -->
+  <p class="sect-label mt">Select Subject</p>
+  <div class="subject-grid" id="subjectGrid"></div>
+
+  <!-- Game Modes -->
+  <p class="sect-label mt">🎮 Game Mode</p>
+  <div class="mode-grid" id="modeGrid"></div>
+
+  <!-- Battle Modes -->
+  <p class="sect-label mt">⚔️ Battle Modes</p>
+  <div class="battle-grid">
+    <button class="battle-card boss-card" onclick="BattleHub.openBoss()">
+      <span class="bc-icon">👹</span>
+      <span class="bc-label">Boss Battle</span>
+      <span class="bc-sub">Defeat the boss</span>
+    </button>
+    <button class="battle-card pvp-card" onclick="BattleHub.openPvP()">
+      <span class="bc-icon">⚔️</span>
+      <span class="bc-label">PvP Battle</span>
+      <span class="bc-sub">1v1 duel</span>
+    </button>
+  </div>
+
+  <!-- Launch -->
+  <div class="launch-pad">
+    <button class="btn btn-primary btn-full" onclick="Game.start()">🚀 Launch Quiz!</button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 4 — QUIZ
+══════════════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+  <!-- Top bar -->
+  <div class="quiz-topbar">
+    <div class="qtb-player">
+      <span class="qtb-avatar" id="quizAvatar">🐉</span>
+      <div class="qtb-info">
+        <span class="qtb-name" id="quizPlayerName">Player</span>
+        <span class="qtb-coins">🪙<span id="quizCoins">0</span></span>
+      </div>
+    </div>
+    <div class="qtb-center">
+      <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount">0</span></div>
+      <div class="qtb-xp">⚡<span id="quizXP">0</span> · Lv<span id="quizLevel">1</span></div>
+    </div>
+    <button class="btn-back" onclick="Game.quit()">✕</button>
+  </div>
+  <!-- Timer -->
+  <div class="timer-wrap" id="timerWrap" style="display:none">
+    <div class="timer-bar" id="timerBar"></div>
+    <div class="timer-text" id="timerText">10</div>
+  </div>
+  <!-- Progress -->
+  <div class="progress-row">
+    <div class="prog-track"><div class="prog-fill" id="progressFill"></div></div>
+    <div class="prog-label">Q<span id="qNum">1</span>/<span id="qTotal">10</span></div>
+  </div>
+  <!-- Question -->
+  <div class="question-strip" id="questionCard">
+    <div class="qs-meta">
+      <span class="qs-num">Q<span id="qNumInCard">1</span> of <span id="qNumInCardTotal">10</span></span>
+      <span class="qs-badge" id="quizSubjectBadge">Math</span>
+    </div>
+    <div class="qs-text" id="questionText">Loading…</div>
+    <div class="q-hint" id="qHint" style="display:none"></div>
+  </div>
+  <!-- Options -->
+  <div class="options-list" id="optionsGrid"></div>
+  <!-- Bottom: powerups + next -->
+  <div class="bottom-bar">
+    <div class="powerups-row">
+      <button class="pu-btn" id="pu-hint"   onclick="PowerUp.use('hint')"   >💡<span>20🪙</span></button>
+      <button class="pu-btn" id="pu-5050"   onclick="PowerUp.use('5050')"   >❌<span>30🪙</span></button>
+      <button class="pu-btn" id="pu-skip"   onclick="PowerUp.use('skip')"   >⏭️<span>40🪙</span></button>
+      <button class="pu-btn" id="pu-freeze" onclick="PowerUp.use('freeze')" >⏱️<span>50🪙</span></button>
+    </div>
+    <button class="btn btn-primary next-btn" id="nextBtn" onclick="Game.next()" style="display:none">Next →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 5 — LEVEL MODE
+══════════════════════════════════════ -->
+<div id="screen-level" class="screen">
+  <div class="quiz-topbar">
+    <div class="qtb-player">
+      <span class="qtb-avatar" id="lvAvatar">🐉</span>
+      <div class="qtb-info">
+        <span class="qtb-name" id="lvPlayerName">Player</span>
+        <span class="qtb-coins">🪙<span id="lvCoins">0</span></span>
+      </div>
+    </div>
+    <div class="qtb-center">
+      <div class="stage-badge" id="lvStageBadge">Stage 1</div>
+      <div class="qtb-xp">Lives: <span id="lvLives">❤️❤️❤️</span></div>
+    </div>
+    <button class="btn-back" onclick="LevelMode.quit()">✕</button>
+  </div>
+  <div class="stage-progress-bar">
+    <div class="stage-dots" id="lvDots"></div>
+    <span class="stage-label" id="lvStageLabel">Stage 1 of 10</span>
+  </div>
+  <div class="lv-xp-track"><div class="lv-xp-fill" id="lvXpBar"></div></div>
+  <div class="question-strip" id="lvQuestionCard">
+    <div class="qs-meta">
+      <span class="qs-num" id="lvQNum">Q1/5</span>
+      <span class="qs-badge" id="lvSubjectBadge">Math</span>
+    </div>
+    <div class="qs-text" id="lvQuestionText">Loading…</div>
+    <div class="q-hint" id="lvHint" style="display:none"></div>
+  </div>
+  <div class="options-list" id="lvOptionsGrid"></div>
+  <div class="lv-status" id="lvStatus"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 6 — BOSS BATTLE
+══════════════════════════════════════ -->
+<div id="screen-boss" class="screen">
+  <div class="boss-arena">
+    <div class="boss-topbar">
+      <button class="btn-back" onclick="BossMode.quit()">✕</button>
+      <span class="boss-topbar-title">⚔️ Boss Battle</span>
+      <span class="qtb-coins">🪙<span id="bossCoins">0</span></span>
+    </div>
+    <div class="boss-section">
+      <div class="boss-emoji" id="bossEmoji">👹</div>
+      <div class="boss-name" id="bossName">Math Monster</div>
+      <div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpBar"></div><span id="bossHpText">10 HP</span></div>
+    </div>
+    <div class="player-hp-row">
+      <span class="php-lbl">❤️ Your HP</span>
+      <div class="php-track"><div class="php-fill" id="phpBar"></div></div>
+      <span id="phpText">3 HP</span>
+    </div>
+    <div class="question-strip" id="bossQuestionCard">
+      <div class="qs-text" id="bossQuestionText">Loading…</div>
+    </div>
+    <div class="options-list" id="bossOptionsGrid"></div>
+    <div class="boss-status" id="bossStatus"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 7 — PvP HUB
+══════════════════════════════════════ -->
+<div id="screen-pvp-hub" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-select')">←</button>
+    <h2>⚔️ PvP Battle</h2>
+    <div class="w38"></div>
+  </div>
+  <div class="pvp-hub-list">
+    <div class="pvp-hub-card card" onclick="PvPOffline.setup()">
+      <span class="phc-icon">🎮</span>
+      <div class="phc-info">
+        <div class="phc-title">Offline PvP</div>
+        <div class="phc-sub">2 players · Same device · Pass &amp; play</div>
+      </div>
+      <span class="phc-badge">FREE</span>
+    </div>
+  </div>
+  <div class="pvp-stats-card card">
+    <div class="psc-title">📊 Your Battle Stats</div>
+    <div class="psc-grid" id="pvpStats"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 8 — PvP SETUP
+══════════════════════════════════════ -->
+<div id="screen-pvp-setup" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-pvp-hub')">←</button>
+    <h2>🎮 Setup Battle</h2>
+    <div class="w38"></div>
+  </div>
+  <div class="pvp-setup-card card">
+    <div class="pvp-setup-player">
+      <div class="psp-label">Player 1</div>
+      <div class="psp-avatar" id="pvpP1Avatar">🐉</div>
+      <div class="psp-name" id="pvpP1Name">You</div>
+    </div>
+    <div class="pvp-vs">VS</div>
+    <div class="pvp-setup-player">
+      <div class="psp-label">Player 2</div>
+      <div class="psp-avatar">🦁</div>
+      <input id="pvpP2NameInput" type="text" class="name-input" placeholder="Player 2 name…" maxlength="15"/>
+    </div>
+  </div>
+  <p class="sect-label mt">Questions per Round</p>
+  <div class="seg-ctrl" style="margin:0 20px">
+    <button id="pvp-r5"  class="active" onclick="PvPOffline.setRounds(5)">5</button>
+    <button id="pvp-r10"             onclick="PvPOffline.setRounds(10)">10</button>
+    <button id="pvp-r15"             onclick="PvPOffline.setRounds(15)">15</button>
+  </div>
+  <div class="launch-pad mt">
+    <button class="btn btn-primary btn-full" onclick="PvPOffline.start()">⚔️ Start Battle!</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 9 — PvP BATTLE
+══════════════════════════════════════ -->
+<div id="screen-pvp-battle" class="screen">
+  <div class="pvp-turn-header">
+    <div class="pvp-player-side pvp-left" id="pvpSideLeft">
+      <span class="pvp-side-avatar" id="pvpTurnAvatarLeft">🐉</span>
+      <div class="pvp-side-info">
+        <span class="pvp-side-name"  id="pvpTurnNameLeft">P1</span>
+        <span class="pvp-side-score" id="pvpTurnScoreLeft">0</span>
+      </div>
+    </div>
+    <div class="pvp-turn-center">
+      <div class="pvp-whose-turn" id="pvpWhoseTurn">P1's Turn</div>
+      <div class="pvp-round-lbl" id="pvpRoundLabel">Q 1/5</div>
+    </div>
+    <div class="pvp-player-side pvp-right" id="pvpSideRight">
+      <div class="pvp-side-info" style="text-align:right">
+        <span class="pvp-side-name"  id="pvpTurnNameRight">P2</span>
+        <span class="pvp-side-score" id="pvpTurnScoreRight">0</span>
+      </div>
+      <span class="pvp-side-avatar" id="pvpTurnAvatarRight">🦁</span>
+    </div>
+  </div>
+  <div class="pvp-timer-track"><div class="pvp-timer-fill" id="pvpTimerBar"></div></div>
+  <div class="question-strip" id="pvpQuestionCard">
+    <div class="qs-text" id="pvpQuestionText">Loading…</div>
+  </div>
+  <div class="options-list" id="pvpOptionsGrid"></div>
+  <!-- Turn handoff overlay -->
+  <div class="pvp-turn-overlay" id="pvpTurnOverlay" style="display:none">
+    <div class="pto-box card">
+      <div class="pto-emoji" id="pvpToEmoji">✅</div>
+      <div class="pto-msg"   id="pvpToMsg">Correct!</div>
+      <div class="pto-next"  id="pvpToNext">Pass to Player 2</div>
+      <button class="btn btn-primary mt" onclick="PvPOffline.nextTurn()">Ready! →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 10 — TIME ATTACK
+══════════════════════════════════════ -->
+<div id="screen-timeattack" class="screen">
+  <div class="quiz-topbar">
+    <div class="qtb-player">
+      <span class="qtb-avatar" id="taAvatar">🐉</span>
+      <div class="qtb-info">
+        <span class="qtb-name">Time Attack</span>
+        <span class="qtb-coins">🪙<span id="taCoins">0</span></span>
+      </div>
+    </div>
+    <div class="qtb-center">
+      <div class="ta-clock" id="taClock">60</div>
+      <div class="ta-score">Score: <span id="taScore">0</span></div>
+    </div>
+    <button class="btn-back" onclick="TimeAttack.quit()">✕</button>
+  </div>
+  <div class="ta-clock-track"><div class="ta-clock-fill" id="taClockBar"></div></div>
+  <div class="question-strip" id="taQuestionCard">
+    <div class="qs-text" id="taQuestionText">Get ready!</div>
+  </div>
+  <div class="options-list" id="taOptionsGrid"></div>
+  <div class="ta-combo" id="taCombo" style="display:none">🔥 ×<span id="taComboNum">2</span> COMBO!</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 11 — EXAM MODE
+══════════════════════════════════════ -->
+<div id="screen-exam" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="ExamMode.quit()">✕</button>
+    <h2>📝 Exam Mode</h2>
+    <div class="exam-timer" id="examTimerDisplay">45:00</div>
+  </div>
+  <div class="exam-prog-row">
+    <div class="exam-prog-fill" id="examProgressBar"></div>
+    <span id="examQLabel">Q 1 / 40</span>
+  </div>
+  <div class="question-strip" id="examQuestionCard">
+    <div class="qs-num" id="examQNum" style="margin-bottom:8px;font-size:.75rem;color:rgba(255,255,255,.5)">Q1</div>
+    <div class="qs-text" id="examQuestionText">Loading…</div>
+  </div>
+  <div class="options-list" id="examOptionsGrid"></div>
+  <div class="exam-nav">
+    <button class="btn btn-ghost" id="examPrevBtn" onclick="ExamMode.prev()">← Prev</button>
+    <div class="exam-dots" id="examDotWrap"></div>
+    <button class="btn btn-ghost" id="examNextBtn" onclick="ExamMode.nextQ()">Next →</button>
+  </div>
+  <div class="launch-pad">
+    <button class="btn btn-primary btn-full" onclick="ExamMode.submit()">✅ Submit Exam</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 12 — RESULT
+══════════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="result-hero">
+    <div class="result-emoji" id="resultEmoji">🏆</div>
+    <h2 class="result-title" id="resultTitle">Awesome!</h2>
+    <p class="result-sub" id="resultSub">Quiz Complete</p>
+  </div>
+  <div class="result-grid">
+    <div class="result-card card"><div class="rc-icon">🎯</div><div class="rc-val" id="rsScore">0/0</div><div class="rc-lbl">Score</div></div>
+    <div class="result-card card"><div class="rc-icon">📊</div><div class="rc-val" id="rsAccuracy">0%</div><div class="rc-lbl">Accuracy</div></div>
+    <div class="result-card card"><div class="rc-icon">🪙</div><div class="rc-val" id="rsCoins">+0</div><div class="rc-lbl">Coins</div></div>
+    <div class="result-card card"><div class="rc-icon">⚡</div><div class="rc-val" id="rsXP">+0</div><div class="rc-lbl">XP</div></div>
+  </div>
+  <div id="newBadgesWrap" style="display:none;padding:0 16px">
+    <p class="sect-label" style="margin-bottom:8px">🏅 Badges Earned!</p>
+    <div class="new-badges-row" id="newBadgesRow"></div>
+  </div>
+  <div id="wrongReview" class="wrong-review card" style="display:none">
+    <h3>📝 Review Answers</h3>
+    <div id="wrongList"></div>
+  </div>
+  <div class="result-btns">
+    <button class="btn btn-primary" onclick="Game.playAgain()">🔄 Play Again</button>
+    <button class="btn btn-ghost"   onclick="App.goTo('screen-select')">📚 Change Quiz</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 13 — PvP RESULT
+══════════════════════════════════════ -->
+<div id="screen-pvp-result" class="screen">
+  <div class="result-hero">
+    <div class="result-emoji" id="pvprEmoji">🏆</div>
+    <h2 class="result-title" id="pvprTitle">Player 1 Wins!</h2>
+    <p class="result-sub" id="pvprSub">GG!</p>
+  </div>
+  <div class="pvpr-scores">
+    <div class="pvpr-card card" id="pvprCard1">
+      <div class="pvpr-av" id="pvprAvatar1">🐉</div>
+      <div class="pvpr-nm" id="pvprName1">P1</div>
+      <div class="pvpr-sc" id="pvprScore1">0</div>
+    </div>
+    <div class="pvpr-vs">VS</div>
+    <div class="pvpr-card card" id="pvprCard2">
+      <div class="pvpr-av" id="pvprAvatar2">🦁</div>
+      <div class="pvpr-nm" id="pvprName2">P2</div>
+      <div class="pvpr-sc" id="pvprScore2">0</div>
+    </div>
+  </div>
+  <div class="result-btns">
+    <button class="btn btn-primary" onclick="PvPOffline.rematch()">🔄 Rematch</button>
+    <button class="btn btn-ghost"   onclick="App.goTo('screen-pvp-hub')">🏠 Hub</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 14 — PROGRESS
+══════════════════════════════════════ -->
+<div id="screen-progress" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
+    <h2>📊 My Progress</h2>
+    <div class="w38"></div>
+  </div>
+  <div class="prog-tabs">
+    <button class="ptab active" id="pt-overview"  onclick="ProgressScreen.tab('overview')">Overview</button>
+    <button class="ptab"        id="pt-badges"    onclick="ProgressScreen.tab('badges')">Badges</button>
+    <button class="ptab"        id="pt-subjects"  onclick="ProgressScreen.tab('subjects')">Subjects</button>
+    <button class="ptab"        id="pt-calendar"  onclick="ProgressScreen.tab('calendar')">Streak</button>
+  </div>
+  <div id="prog-overview" class="prog-tab active">
+    <div class="ov-hero card">
+      <span class="ov-avatar" id="ovAvatar">🐉</span>
+      <div class="ov-info">
+        <div class="ov-name"  id="ovName">Player</div>
+        <div class="ov-level">Level <span id="ovLevel">1</span></div>
+        <div class="ov-xp-track mt-sm"><div class="ov-xp-fill" id="ovXpBar"></div></div>
+        <div class="ov-xp-lbl"><span id="ovXP">0</span> / <span id="ovXPMax">100</span> XP</div>
+      </div>
+    </div>
+    <div class="ov-grid" id="overviewGrid"></div>
+    <p class="sect-label" style="padding:0 16px;margin-top:16px">📈 Weekly Score</p>
+    <div class="weekly-chart card" id="weeklyChart"></div>
+  </div>
+  <div id="prog-badges" class="prog-tab">
+    <p class="sect-label" style="padding:0 16px">🏅 <span id="badgeCountLabel">0/0</span> Badges</p>
+    <div class="badges-grid" id="badgesGrid"></div>
+  </div>
+  <div id="prog-subjects" class="prog-tab">
+    <p class="sect-label" style="padding:0 16px">📚 Report Card</p>
+    <div class="report-list" id="reportCard"></div>
+  </div>
+  <div id="prog-calendar" class="prog-tab">
+    <div class="streak-hero card">
+      <div>🔥</div>
+      <div class="sh-num" id="calStreak">0</div>
+      <div class="sh-lbl">Day Streak</div>
+    </div>
+    <p class="sect-label" style="padding:0 16px;margin-top:16px">📅 Study Calendar</p>
+    <div class="study-calendar" id="studyCalendar"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 15 — LEADERBOARD
+══════════════════════════════════════ -->
+<div id="screen-leaderboard" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
+    <h2>🏆 Leaderboard</h2>
+    <div class="w38"></div>
+  </div>
+  <div class="lb-list" id="lbContainer"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OVERLAYS
+══════════════════════════════════════ -->
+<!-- Reward -->
+<div id="rewardOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji">🎁</div>
+    <h3>Reward!</h3>
+    <div class="ovb-content" id="rewardContent">+50 Coins!</div>
+    <button class="btn btn-primary mt" onclick="Rewards.close()">Claim! 🎉</button>
+  </div>
+</div>
+<!-- Level Up -->
+<div id="levelUpOverlay" class="overlay" style="display:none">
+  <div class="lu-box">
+    <div class="lu-stars">⭐⭐⭐</div>
+    <div class="lu-text">LEVEL UP!</div>
+    <div class="lu-num" id="levelUpNum">Level 2</div>
+  </div>
+</div>
+<!-- Avatar Unlock -->
+<div id="avatarUnlockOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji" id="unlockAvatarBig">🐉</div>
+    <h3>Unlock Avatar?</h3>
+    <p class="ov-sub">Costs <strong>5,000 🪙</strong></p>
+    <p class="ov-sub">Balance: 🪙 <span id="unlockBalance">0</span></p>
+    <div class="ov-btns">
+      <button class="btn btn-primary" onclick="AvatarUnlock.confirm()">✅ Unlock!</button>
+      <button class="btn btn-ghost"   onclick="AvatarUnlock.cancel()">Cancel</button>
+    </div>
+  </div>
+</div>
+<!-- Badge Popup -->
+<div id="badgePopup" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji" id="badgePopupIcon">🏅</div>
+    <div class="ovb-title">Badge Unlocked!</div>
+    <div class="ovb-name" id="badgePopupName">First Win</div>
+    <div class="ovb-sub"  id="badgePopupDesc">Complete your first quiz</div>
+    <button class="btn btn-primary mt" onclick="Badges.closePopup()">Awesome! 🎉</button>
+  </div>
+</div>
+<!-- Stage Clear -->
+<div id="stageClearOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-stars" id="scStars">⭐⭐⭐</div>
+    <div class="ovb-title" id="scTitle">Stage 1 Clear!</div>
+    <div class="ovb-content" id="scReward">+50 🪙 · +20 XP</div>
+    <div class="ovb-sub"    id="scNext">Stage 2 unlocked!</div>
+    <button class="btn btn-primary mt" onclick="LevelMode.nextStage()">Continue →</button>
+    <button class="btn btn-ghost mt-sm" onclick="LevelMode.quit()">Exit</button>
+  </div>
+</div>
+<!-- Boss Result -->
+<div id="bossResultOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji" id="brEmoji">🏆</div>
+    <div class="ovb-title" id="brTitle">Boss Defeated!</div>
+    <div class="ovb-sub"   id="brSub">You earned bonus coins!</div>
+    <div class="ovb-content" id="brReward">+300 🪙</div>
+    <button class="btn btn-primary mt" onclick="BossMode.closeResult()">Collect!</button>
+  </div>
+</div>
+<!-- Time Attack Result -->
+<div id="taResultOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji">⚡</div>
+    <div class="ovb-title">Time's Up!</div>
+    <div class="ovb-content">Score: <span id="tarScore">0</span></div>
+    <div class="ovb-sub">Best: <span id="tarBest">0</span> &nbsp;|&nbsp; <span id="tarCoins">+0 🪙</span></div>
+    <div class="ov-btns mt">
+      <button class="btn btn-primary" onclick="TimeAttack.restart()">🔄 Again</button>
+      <button class="btn btn-ghost"   onclick="TimeAttack.exit()">🏠 Home</button>
+    </div>
+  </div>
+</div>
+<!-- Settings -->
+<div id="settingsOverlay" class="overlay" style="display:none">
+  <div class="settings-panel card">
+    <div class="settings-header">
+      <h3>⚙️ Settings</h3>
+      <button class="icon-btn" onclick="Settings.close()">✕</button>
+    </div>
+    <!-- Appearance -->
+    <div class="settings-section">
+      <div class="settings-label">🎨 Appearance</div>
+      <div class="setting-row">
+        <span>Dark Mode</span>
+        <label class="toggle-switch"><input type="checkbox" id="settingDarkMode" onchange="Settings.applyTheme(this.checked)"/><span class="toggle-track"></span></label>
+      </div>
+      <div class="setting-row">
+        <span>Font Size</span>
+        <div class="seg-ctrl">
+          <button id="fs-small"  onclick="Settings.setFontSize('small')">S</button>
+          <button id="fs-medium" onclick="Settings.setFontSize('medium')">M</button>
+          <button id="fs-large"  onclick="Settings.setFontSize('large')">L</button>
+        </div>
+      </div>
+    </div>
+    <!-- Audio -->
+    <div class="settings-section">
+      <div class="settings-label">🔊 Audio</div>
+      <div class="setting-row">
+        <span>Sound Effects</span>
+        <label class="toggle-switch"><input type="checkbox" id="settingSound" onchange="Settings.applySound(this.checked)"/><span class="toggle-track"></span></label>
+      </div>
+    </div>
+    <!-- Gameplay -->
+    <div class="settings-section">
+      <div class="settings-label">🎮 Gameplay</div>
+      <div class="setting-row">
+        <span>Auto-show Hints</span>
+        <label class="toggle-switch"><input type="checkbox" id="settingAutoHint" onchange="Settings.save()"/><span class="toggle-track"></span></label>
+      </div>
+      <div class="setting-row">
+        <span>Animations</span>
+        <label class="toggle-switch"><input type="checkbox" id="settingAnimations" onchange="Settings.applyAnimations(this.checked)"/><span class="toggle-track"></span></label>
+      </div>
+      <div class="setting-row">
+        <span>Timer Duration</span>
+        <div class="seg-ctrl wide">
+          <button id="ts-5"  onclick="Settings.setTimer(5)">5s</button>
+          <button id="ts-10" onclick="Settings.setTimer(10)" class="active">10s</button>
+          <button id="ts-15" onclick="Settings.setTimer(15)">15s</button>
+          <button id="ts-30" onclick="Settings.setTimer(30)">30s</button>
+        </div>
+      </div>
+    </div>
+    <!-- Edit Profile -->
+    <div class="settings-section">
+      <div class="settings-label">👤 Edit Profile</div>
+      <div class="settings-profile-row">
+        <div class="settings-avatar-preview" id="settingsAvatarPreview">🐉</div>
+        <input id="settingsNameInput" type="text" class="name-input settings-name-input" placeholder="Your name…" maxlength="20"/>
+      </div>
+      <p class="avatar-hint" style="margin:8px 0">🔒 Locked avatars cost <strong>5,000 🪙</strong></p>
+      <div class="avatar-grid settings-avatar-grid" id="settingsAvatarGrid"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="Profile.saveFromSettings()">💾 Save Profile</button>
+    </div>
+    <!-- Stats -->
+    <div class="settings-section">
+      <div class="settings-label">📊 My Stats</div>
+      <div class="settings-stats-grid" id="settingsStatsGrid"></div>
+    </div>
+    <!-- Danger -->
+    <div class="settings-section">
+      <div class="settings-label">⚠️ Danger Zone</div>
+      <button class="btn btn-danger btn-full" onclick="Settings.resetProgress()">🗑️ Reset All Progress</button>
+    </div>
+    <div class="settings-version">QuizBlast v3.1 · Made with ❤️</div>
+  </div>
+</div>
+
+<script src="js/security.js"></script>
+<script src="js/script.js"></script>
+<script>
+  // Register Service Worker for offline support + PWA install
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW registered'))
+      .catch(e => console.log('SW failed:', e));
+  }
+</script>
+</body>
+</html>
