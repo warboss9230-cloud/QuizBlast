@@ -346,18 +346,22 @@ input:checked+.tog-track::before{transform:translateX(21px);}
 
     <!-- ══ PLAYER ══ -->
     <div class="panel" id="p-player">
+      <!-- Player Card -->
       <div class="card">
-        <div class="card-hd"><div class="card-hd-left"><span>👤</span>Player Profile</div>
+        <div class="card-hd">
+          <div class="card-hd-left"><span>👤</span>Player Profile</div>
           <span class="bx bx-green" id="pStatus">Active</span>
         </div>
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-          <div style="font-size:2.8rem;flex-shrink:0" id="pAvatar">👤</div>
-          <div>
-            <div style="font-family:var(--fh);font-size:1.2rem;font-weight:800" id="pName">—</div>
-            <div style="font-size:.78rem;color:var(--text2);font-weight:700;margin-top:3px" id="pMeta">No data</div>
+        <!-- Player Info -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:var(--r-sm)">
+          <div style="font-size:2.5rem;flex-shrink:0" id="pAvatar">👤</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--fh);font-size:1.1rem;font-weight:800" id="pName">—</div>
+            <div style="font-size:.76rem;color:var(--text2);font-weight:700;margin-top:3px" id="pMeta">No data</div>
           </div>
         </div>
         <div class="div"></div>
+        <!-- Edit Fields -->
         <div class="frow">
           <div class="fgrp"><label class="flbl">Name</label><input id="e-name" type="text" class="finp" maxlength="20"/></div>
           <div class="fgrp"><label class="flbl">Coins</label><input id="e-coins" type="number" class="finp" min="0" max="999999"/></div>
@@ -370,14 +374,25 @@ input:checked+.tog-track::before{transform:translateX(21px);}
           <div class="fgrp"><label class="flbl">Total Games</label><input id="e-games" type="number" class="finp" min="0"/></div>
           <div class="fgrp"><label class="flbl">Day Streak</label><input id="e-streak" type="number" class="finp" min="0"/></div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <button class="btn btn-success" onclick="PA.save()">💾 Save</button>
+        <!-- Avatar Unlock Options -->
+        <div class="fgrp">
+          <label class="flbl">🎭 Unlock Avatars</label>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(5)">First 5</button>
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(10)">First 10</button>
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(20)">First 20</button>
+            <button class="btn btn-warning btn-sm" onclick="PA.unlockAvatars(100)">All 100</button>
+          </div>
+        </div>
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-success" onclick="PA.save()">💾 Save Changes</button>
           <button class="btn btn-warning btn-sm" onclick="PA.give(500,0)">+500🪙</button>
           <button class="btn btn-warning btn-sm" onclick="PA.give(0,200)">+200⚡</button>
-          <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars()">🎭 Unlock All Avatars</button>
-          <button class="btn btn-ghost btn-sm" onclick="PA.unlockBadges()">🏅 Unlock All Badges</button>
+          <button class="btn btn-ghost btn-sm" onclick="PA.unlockBadges()">🏅 All Badges</button>
         </div>
       </div>
+      <!-- Danger Zone -->
       <div class="danger-zone">
         <div class="danger-title">⚠️ Danger Zone</div>
         <div class="danger-desc">Permanent actions — cannot be undone.</div>
@@ -902,13 +917,14 @@ const PA = {
     toast(`${coins?'+'+coins+'🪙':''}${xp?' +'+xp+'⚡':''} given!`);
   },
 
-  unlockAvatars(){
-    Conf.ask('🎭','Unlock All 100 Avatars?','Player will get all avatars instantly.',()=>{
+  unlockAvatars(count=100){
+    const label = count>=100 ? 'All 100 Avatars' : `First ${count} Avatars`;
+    Conf.ask('🎭',`Unlock ${label}?`,`Player will get ${label.toLowerCase()} instantly.`,()=>{
       const p=ls.get(K.player)||{};
-      p.unlockedAvatars=Array.from({length:100},(_,i)=>i);
+      p.unlockedAvatars=Array.from({length:count},(_,i)=>i);
       ls.set(K.player,p);
-      Auth.log('UNLOCK_ALL_AVATARS');
-      this.load(); toast('🎭 All avatars unlocked!');
+      Auth.log(`UNLOCK_AVATARS_${count}`);
+      this.load(); toast(`🎭 ${label} unlocked!`);
     });
   },
 
