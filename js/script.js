@@ -429,9 +429,16 @@ const Settings = (() => {
   function applyAnimations(v){cfg.animations=v;if(!v)document.documentElement.setAttribute('data-no-anim','');else document.documentElement.removeAttribute('data-no-anim');persist();}
   function setFontSize(s){cfg.fontSize=s;document.documentElement.setAttribute('data-font',s);['small','medium','large'].forEach(x=>{const b=$('fs-'+x);if(b)b.classList.toggle('active',x===s);});persist();}
   function setTimer(s){cfg.timerSeconds=s;[5,10,15,30].forEach(t=>{const b=$('ts-'+t);if(b)b.classList.toggle('active',t===s);});persist();}
-  function getTimerSeconds(){return cfg.timerSeconds||10;}
+  function getTimerSeconds(){
+    try{const ac=JSON.parse(localStorage.getItem('qb_admin_gamecfg')||'{}');if(ac.timerSeconds)return ac.timerSeconds;}catch(e){}
+    return cfg.timerSeconds||10;
+  }
   function isAutoHint(){return!!cfg.autoHint;}
-  function getRewardEvery(){return cfg.rewardEvery||5;}
+  function getRewardEvery(){
+    // Check admin override first
+    try{const ac=JSON.parse(localStorage.getItem('qb_admin_gamecfg')||'{}');if(ac.rewardEvery)return ac.rewardEvery;}catch(e){}
+    return cfg.rewardEvery||5;
+  }
   function setRewardEvery(v){
     cfg.rewardEvery=v;persist();
     [5,10,15,20].forEach(n=>{const b=$('re-'+n);if(b)b.classList.toggle('active',n===v);});
