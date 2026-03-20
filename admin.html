@@ -751,7 +751,7 @@ const Auth={
     const pw=$('lPass').value;
     if(!pw){$('lErr').textContent='Enter password.';return;}
     const h=await sha256(pw);
-    const stored=ls.get(K.pass)||await sha256('admin@quizblast');
+    const stored=localStorage.getItem(K.pass)||await sha256('admin@quizblast');
     if(h===stored){
       this.tries=0;$('loginWrap').style.display='none';
       $('adminWrap').style.display='flex';$('lErr').textContent='';$('lPass').value='';
@@ -1208,9 +1208,12 @@ const Sec={
     const np=$('sp-new').value,cp=$('sp-conf').value;
     if(!np||!cp){toast('Fill both fields!','er');return;}
     if(np!==cp){toast('Passwords do not match!','er');return;}
-    if(np.length<8){toast('Min 8 chars!','er');return;}
-    const h=await sha256(np);localStorage.setItem(K.pass,h);
-    $('sp-new').value='';$('sp-conf').value='';Auth.log('PASS_CHANGED');toast('✅ Password updated!');
+    if(np.length<6){toast('Min 6 chars!','er');return;}
+    const h=await sha256(np);
+    localStorage.setItem(K.pass,h);
+    $('sp-new').value='';$('sp-conf').value='';
+    Auth.log('PASS_CHANGED');
+    toast('✅ Password updated! Use new password next time.');
   },
   loadLog(){
     const sl=$('secLog');if(!sl)return;
