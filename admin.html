@@ -552,7 +552,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
           </div></div>
         <div class="fgrp"><label class="flbl">Questions per Quiz</label>
           <div style="display:flex;align-items:center;gap:10px">
-            <input type="range" id="gs-qn" min="5" max="70" step="5" value="10" oninput="GS.upd('questionsPerQuiz',+this.value,'gs-qn-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <input type="range" id="gs-qn" min="5" max="20" step="5" value="10" oninput="GS.upd('questionsPerQuiz',+this.value,'gs-qn-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
             <span id="gs-qn-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">10</span>
           </div></div>
         <div class="fgrp"><label class="flbl">Daily Challenge Reward (coins)</label>
@@ -560,6 +560,25 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
             <input type="range" id="gs-dr" min="50" max="1000" step="50" value="200" oninput="GS.upd('dailyReward',+this.value,'gs-dr-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
             <span id="gs-dr-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">200</span>
           </div></div>
+        <div class="div"></div>
+        <div class="fgrp">
+          <label class="flbl">⏱️ Timer Duration</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <button id="gs-ts-5"  class="btn btn-ghost btn-sm" onclick="GS.setTimer(5)">5s</button>
+            <button id="gs-ts-10" class="btn btn-primary btn-sm" onclick="GS.setTimer(10)">10s</button>
+            <button id="gs-ts-15" class="btn btn-ghost btn-sm" onclick="GS.setTimer(15)">15s</button>
+            <button id="gs-ts-30" class="btn btn-ghost btn-sm" onclick="GS.setTimer(30)">30s</button>
+          </div>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">🎁 Reward Every N Correct Answers</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <button id="gs-re-5"  class="btn btn-primary btn-sm" onclick="GS.setReward(5)">5</button>
+            <button id="gs-re-10" class="btn btn-ghost btn-sm" onclick="GS.setReward(10)">10</button>
+            <button id="gs-re-15" class="btn btn-ghost btn-sm" onclick="GS.setReward(15)">15</button>
+            <button id="gs-re-20" class="btn btn-ghost btn-sm" onclick="GS.setReward(20)">20</button>
+          </div>
+        </div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="btn btn-primary" onclick="GS.save()">💾 Apply to Game</button>
           <button class="btn btn-ghost" onclick="GS.reset()">↺ Defaults</button>
@@ -1104,14 +1123,31 @@ const GS={
     set('gs-timer',c.timerSeconds,'s');set('gs-cc',c.coinCorrect);
     $('gs-cw-val')&&($('gs-cw-val').textContent='-'+c.coinWrong);$('gs-cw')&&($('gs-cw').value=c.coinWrong);
     set('gs-xp',c.xpCorrect);set('gs-qn',c.questionsPerQuiz);set('gs-dr',c.dailyReward);
+    // Sync timer buttons
+    const t=c.timerSeconds||10;
+    [5,10,15,30].forEach(v=>{const b=$('gs-ts-'+v);if(b)b.className=v===t?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';});
+    // Sync reward buttons
+    const r=c.rewardEvery||5;
+    [5,10,15,20].forEach(v=>{const b=$('gs-re-'+v);if(b)b.className=v===r?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';});
   },
   upd(key,val,lblId,sfx=''){
     const c=this.get();c[key]=val;localStorage.setItem(K.gameCfg,JSON.stringify(c));
     const l=$(lblId);if(l)l.textContent=(key==='coinWrong'?'-':'')+val+sfx;
   },
+  setTimer(v){
+    const c=this.get();c.timerSeconds=v;localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    [5,10,15,30].forEach(t=>{const b=$('gs-ts-'+t);if(b){b.className=t===v?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';}});
+    toast('Timer set to '+v+'s');
+  },
+  setReward(v){
+    const c=this.get();c.rewardEvery=v;localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    [5,10,15,20].forEach(n=>{const b=$('gs-re-'+n);if(b){b.className=n===v?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';}});
+    toast('Reward every '+v+' correct');
+  },
   save(){
     const c=this.get();localStorage.setItem(K.gameCfg,JSON.stringify(c));
-    const gs=JSON.parse(localStorage.getItem(K.settings)||'{}');gs.timerSeconds=c.timerSeconds;
+    const gs=JSON.parse(localStorage.getItem(K.settings)||'{}');
+    gs.timerSeconds=c.timerSeconds;gs.rewardEvery=c.rewardEvery||5;
     localStorage.setItem(K.settings,JSON.stringify(gs));Auth.log('GS_SAVED');toast('✅ Settings applied!');
   },
   reset(){localStorage.removeItem(K.gameCfg);this.load();Auth.log('GS_RESET');toast('Reset to defaults','in');}
