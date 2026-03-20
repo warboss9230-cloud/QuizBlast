@@ -4,14 +4,14 @@
 
 /* ── Arena ── */
 .boss-arena {
-  background: radial-gradient(ellipse at 50% -10%, #1a0008 0%, #0d0f1a 60%);
+  background: radial-gradient(ellipse at 50% -10%, #2d1535 0%, #1a1625 60%);
   min-height:100vh; display:flex; flex-direction:column;
   position:relative; overflow-y:auto; overflow-x:hidden;
 }
 /* Fog / atmosphere at top */
 .boss-arena::before {
   content:''; position:absolute; top:0; left:-20%; right:-20%; height:45%;
-  background: radial-gradient(ellipse at 50% 0%, var(--boss-color,#ff4455) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 0%, var(--boss-color,#f48fb1) 0%, transparent 70%);
   opacity:.18; pointer-events:none; z-index:0;
   transition: opacity .5s ease;
 }
@@ -103,10 +103,10 @@
 
 /* Face ── */
 .boss-face-shape {
-  fill: radial-gradient(circle at 40% 35%, var(--boss-color,#ff4455) 0%, #0d0005 100%);
+  fill: radial-gradient(circle at 40% 35%, var(--boss-color,#ff4455) 0%, #160c22 100%);
   stroke: var(--boss-color,#ff4455); stroke-width:2;
 }
-.boss-face-inner { fill: #0d0005; opacity:.7; }
+.boss-face-inner { fill: #160c22; opacity:.7; }
 .boss-face-shadow { fill:#000; opacity:.4; }
 .boss-face-highlight { fill:#fff; opacity:.06; }
 
@@ -147,12 +147,12 @@
 
 /* Mouth */
 .boss-mouth-outer { fill:#000; stroke:var(--boss-color,#ff4455); stroke-width:2; }
-.boss-mouth-inner { fill:#1a0008; }
-.boss-gum-upper   { fill:#4a0010; }
+.boss-mouth-inner { fill:#1e0f2a; }
+.boss-gum-upper   { fill:#3d1a4a; }
 .boss-gum-lower   { fill:#3a000c; }
 .boss-fang-shape  { fill:#f0e8d0; stroke:#998870; stroke-width:.5; }
 .boss-fang-dark   { fill:#998870; opacity:.5; }
-.boss-tongue      { fill:#cc2244; animation:tongueLick 5s ease-in-out infinite; transform-origin:top center; transform-box:fill-box; }
+.boss-tongue      { fill:#f48fb1; animation:tongueLick 5s ease-in-out infinite; transform-origin:top center; transform-box:fill-box; }
 @keyframes tongueLick { 0%,70%,100%{transform:scaleY(0);opacity:0} 78%{transform:scaleY(.5);opacity:1} 84%{transform:scaleY(1);opacity:1} 90%{transform:scaleY(.3);opacity:.5} 92%{transform:scaleY(0);opacity:0} }
 
 /* Scales pattern */
@@ -232,13 +232,13 @@
 
 /* ── HP bars ── */
 .boss-hp-track { width:100%; max-width:320px; height:14px; background:var(--bg3); border-radius:10px; overflow:hidden; position:relative; }
-.boss-hp-fill  { height:100%; background:linear-gradient(90deg,#ef4444,#ff6b35); border-radius:10px; transition:width .6s ease; }
-.boss-arena.rage-mode .boss-hp-fill { background:linear-gradient(90deg,#ff0000,#ff4400); animation:hpFlash .5s ease-in-out infinite alternate; }
+.boss-hp-fill  { height:100%; background:linear-gradient(90deg,#ef9a9a,#ffcc80); border-radius:10px; transition:width .6s ease; }
+.boss-arena.rage-mode .boss-hp-fill { background:linear-gradient(90deg,#ef9a9a,#f48fb1); animation:hpFlash .5s ease-in-out infinite alternate; }
 @keyframes hpFlash { 0%{opacity:1} 100%{opacity:.6} }
 #bossHpText    { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:.66rem; font-weight:800; color:#fff; }
 .player-hp-row { display:flex; align-items:center; gap:8px; padding:0 14px 8px; }
 .php-lbl       { font-size:.78rem; font-weight:800; color:var(--red); flex-shrink:0; }
 .php-track     { flex:1; height:9px; background:var(--bg3); border-radius:10px; overflow:hidden; }
-.php-fill      { height:100%; background:linear-gradient(90deg,var(--green),#86efac); border-radius:10px; transition:width .4s ease; }
+.php-fill      { height:100%; background:linear-gradient(90deg,#a5d6a7,#c8e6c9); border-radius:10px; transition:width .4s ease; }
 #phpText       { font-size:.72rem; font-weight:800; color:var(--text2); flex-shrink:0; }
 .boss-status   { text-align:center; font-size:1rem; font-weight:800; padding:6px; min-height:30px; color:var(--boss-color,#ff4455); }
