@@ -7,14 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0d0f1a;--bg2:#141728;--bg3:#1c2040;
-  --card:#1a1e36;--card2:#222847;
-  --border:rgba(255,255,255,.09);
-  --text:#e8eaf6;--text2:#9ba3d0;
-  --accent:#6c63ff;--purple:#a78bfa;--accent2:#ff6584;
-  --gold:#ffd700;--green:#4ade80;--red:#f87171;
-  --cyan:#22d3ee;--orange:#fb923c;
-  --shadow:0 8px 32px rgba(0,0,0,.5);
+  /* Pastel Dark Admin Theme */
+  --bg:#1a1625;--bg2:#221d30;--bg3:#2a2440;
+  --card:#251f38;--card2:#2f2848;
+  --border:rgba(200,180,255,.14);
+  --text:#f0eaff;--text2:#b8a9d9;
+  --accent:#b39ddb;--purple:#ce93d8;--accent2:#f48fb1;
+  --gold:#ffe082;--green:#a5d6a7;--red:#ef9a9a;
+  --cyan:#80deea;--orange:#ffcc80;
+  --shadow:0 8px 32px rgba(0,0,0,.4);
   --r:14px;--r-sm:8px;
   --tr:all .2s cubic-bezier(.4,0,.2,1);
   --fh:'Baloo 2',cursive;--fb:'Nunito',sans-serif;
@@ -25,28 +26,28 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 
 /* LOGIN */
 #loginWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
-  background:radial-gradient(ellipse at 30% 20%,#1a1060,transparent 60%),radial-gradient(ellipse at 70% 80%,#1a0030,transparent 55%),#0d0f1a;}
+  background:radial-gradient(ellipse at 30% 20%,#2d1f50,transparent 60%),radial-gradient(ellipse at 70% 80%,#2d1535,transparent 55%),#1a1625;}
 .login-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:40px 32px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);}
 .login-logo{font-size:2.8rem;margin-bottom:12px;display:block;animation:float 2.5s ease-in-out infinite;}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .login-title{font-family:var(--fh);font-size:1.55rem;font-weight:800;background:linear-gradient(135deg,#fff,var(--purple) 60%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .login-sub{color:var(--text2);font-size:.78rem;font-weight:700;margin:4px 0 28px;}
 .inp{width:100%;padding:13px 16px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--fb);font-size:.9rem;font-weight:700;outline:none;margin-bottom:10px;transition:var(--tr);}
-.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2);}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,157,219,.2);}
 .login-err{min-height:18px;font-size:.78rem;font-weight:800;color:var(--red);margin-bottom:8px;}
-.lock-bar{display:none;margin-top:12px;padding:10px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:var(--r-sm);font-size:.78rem;font-weight:800;color:var(--red);}
+.lock-bar{display:none;margin-top:12px;padding:10px;background:rgba(239,154,154,.1);border:1px solid rgba(239,154,154,.3);border-radius:var(--r-sm);font-size:.78rem;font-weight:800;color:var(--red);}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:50px;font-family:var(--fb);font-size:.83rem;font-weight:800;cursor:pointer;transition:var(--tr);white-space:nowrap;}
 .btn:active{transform:scale(.96);}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(108,99,255,.4);}
+.btn-primary{background:linear-gradient(135deg,#b39ddb,#ce93d8);color:#2d2040;box-shadow:0 4px 16px rgba(179,157,219,.35);}
 .btn-primary:hover{transform:translateY(-1px);}
-.btn-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;}
-.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;}
-.btn-warning{background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a1e36;}
+.btn-success{background:linear-gradient(135deg,#a5d6a7,#81c784);color:#fff;}
+.btn-danger{background:linear-gradient(135deg,#ef9a9a,#e57373);color:#fff;}
+.btn-warning{background:linear-gradient(135deg,#ffe082,#ffcc80);color:#2d2040;}
 .btn-ghost{background:transparent;color:var(--text2);border:2px solid var(--border);}
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
-.btn-info{background:linear-gradient(135deg,var(--cyan),#0891b2);color:#fff;}
+.btn-info{background:linear-gradient(135deg,#80deea,#4dd0e1);color:#fff;}
 .btn-sm{padding:6px 13px;font-size:.75rem;}
 .btn-xs{padding:4px 10px;font-size:.7rem;}
 .btn-full{width:100%;}
@@ -65,8 +66,8 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 
 .adm-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;padding:0 12px;flex-shrink:0;}
 .adm-tab{display:flex;align-items:center;gap:5px;padding:11px 14px;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--text2);font-family:var(--fb);font-size:.78rem;font-weight:800;cursor:pointer;transition:var(--tr);white-space:nowrap;}
-.adm-tab:hover{color:var(--accent);}
-.adm-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.adm-tab:hover{color:#b39ddb;}
+.adm-tab.on{color:#ce93d8;border-bottom-color:#b39ddb;}
 .tab-ic{font-size:.9rem;}
 .adm-body{flex:1;overflow-y:auto;}
 .adm-content{padding:16px;max-width:940px;margin:0 auto;}
@@ -88,7 +89,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 .fgrp{margin-bottom:12px;}
 .flbl{display:block;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:5px;}
 .finp{width:100%;padding:9px 12px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--fb);font-size:.86rem;font-weight:700;outline:none;transition:var(--tr);}
-.finp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15);}
+.finp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,157,219,.15);}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .fcol{display:flex;flex-direction:column;}
 
