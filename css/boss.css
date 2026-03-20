@@ -20,7 +20,7 @@
 
 .boss-topbar {
   display:flex; align-items:center; justify-content:space-between;
-  padding:10px 14px; border-bottom:1px solid var(--border);
+  padding:7px 14px; border-bottom:1px solid var(--border);
   position:relative; z-index:2;
 }
 .boss-topbar-title { font-family:var(--fh); font-size:1.1rem; font-weight:800; color:var(--accent2); }
@@ -28,17 +28,17 @@
 /* ── Boss section ── */
 .boss-section {
   display:flex; flex-direction:column; align-items:center;
-  padding:0 14px 6px; gap:5px;
+  padding:0 14px 4px; gap:3px;
   position:relative; z-index:1;
 }
 
-/* ── Monster wrap — half screen ── */
+/* ── Monster wrap — compact ── */
 .boss-monster-wrap {
   position:relative;
-  width: min(180px, 46vw);
-  height: min(180px, 46vw);
+  width: min(130px, 36vw);
+  height: min(130px, 36vw);
   display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; margin-top:4px;
+  flex-shrink:0; margin-top:2px;
 }
 
 /* ── Screen shake ── */
@@ -58,8 +58,8 @@
   border:2px solid var(--boss-color,#ff4455);
   pointer-events:none;
 }
-.boss-aura  { inset:-16px; opacity:.3; animation:aura1 2.2s ease-in-out infinite; }
-.boss-aura2 { inset:-30px; opacity:.15; animation:aura1 2.2s ease-in-out infinite .7s; }
+.boss-aura  { inset:-10px; opacity:.3; animation:aura1 2.2s ease-in-out infinite; }
+.boss-aura2 { inset:-20px; opacity:.15; animation:aura1 2.2s ease-in-out infinite .7s; }
 @keyframes aura1 { 0%,100%{transform:scale(1);opacity:.3} 50%{transform:scale(1.06);opacity:.55} }
 .boss-arena.rage-mode .boss-aura  { animation:aura1 .9s ease-in-out infinite; opacity:.6; }
 .boss-arena.rage-mode .boss-aura2 { animation:aura1 .9s ease-in-out infinite .3s; opacity:.35; }
@@ -71,7 +71,7 @@
   animation:bossFloat 4s ease-in-out infinite;
   will-change:transform;
 }
-@keyframes bossFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes bossFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 .boss-arena.rage-mode .boss-monster { animation:bossFloatRage 1.4s ease-in-out infinite; }
 @keyframes bossFloatRage { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-6px) scale(1.02)} }
 
@@ -184,8 +184,8 @@
 
 /* ── Emoji badge ── */
 .boss-emoji-badge {
-  position:absolute; bottom:-4px; right:-4px;
-  font-size:1.4rem; z-index:5;
+  position:absolute; bottom:-3px; right:-3px;
+  font-size:1.1rem; z-index:5;
   filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));
   animation:badgeBounce 2.5s ease-in-out infinite;
 }
@@ -193,11 +193,11 @@
 
 /* ── Level badge ── */
 .boss-level-badge {
-  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-  background:var(--boss-color,#ff4455); color:#fff;
-  font-family:var(--fh); font-size:.58rem; font-weight:900;
-  padding:2px 10px; border-radius:20px; white-space:nowrap;
-  box-shadow:0 2px 10px rgba(0,0,0,.5); letter-spacing:.5px;
+  position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+  background:var(--boss-color,#f48fb1); color:#fff;
+  font-family:var(--fh); font-size:.52rem; font-weight:900;
+  padding:1px 8px; border-radius:20px; white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.4); letter-spacing:.4px;
 }
 
 /* ── Particles ── */
@@ -228,17 +228,17 @@
 /* ── Name / info ── */
 .boss-name       { font-family:var(--fh); font-size:1.1rem; font-weight:800; color:var(--boss-color,#ff4455); margin-top:4px; text-shadow:0 0 12px var(--boss-color,#ff4455); }
 .boss-title-text { font-size:.66rem; font-weight:800; color:var(--text2); letter-spacing:.5px; font-style:italic; margin-top:-3px; }
-.boss-subject-badge { font-size:.7rem; font-weight:900; padding:3px 10px; border-radius:20px; transition:all .4s ease; }
+.boss-subject-badge { font-size:.63rem; font-weight:900; padding:2px 8px; border-radius:20px; transition:all .4s ease; }
 
 /* ── HP bars ── */
-.boss-hp-track { width:100%; max-width:320px; height:14px; background:var(--bg3); border-radius:10px; overflow:hidden; position:relative; }
+.boss-hp-track { width:100%; max-width:300px; height:10px; background:var(--bg3); border-radius:10px; overflow:hidden; position:relative; }
 .boss-hp-fill  { height:100%; background:linear-gradient(90deg,#ef9a9a,#ffcc80); border-radius:10px; transition:width .6s ease; }
 .boss-arena.rage-mode .boss-hp-fill { background:linear-gradient(90deg,#ef9a9a,#f48fb1); animation:hpFlash .5s ease-in-out infinite alternate; }
 @keyframes hpFlash { 0%{opacity:1} 100%{opacity:.6} }
-#bossHpText    { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:.66rem; font-weight:800; color:#fff; }
-.player-hp-row { display:flex; align-items:center; gap:8px; padding:0 14px 8px; }
+#bossHpText    { position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:.58rem; font-weight:800; color:#fff; }
+.player-hp-row { display:flex; align-items:center; gap:6px; padding:0 14px 4px; }
 .php-lbl       { font-size:.78rem; font-weight:800; color:var(--red); flex-shrink:0; }
-.php-track     { flex:1; height:9px; background:var(--bg3); border-radius:10px; overflow:hidden; }
+.php-track     { flex:1; height:7px; background:var(--bg3); border-radius:10px; overflow:hidden; }
 .php-fill      { height:100%; background:linear-gradient(90deg,#a5d6a7,#c8e6c9); border-radius:10px; transition:width .4s ease; }
 #phpText       { font-size:.72rem; font-weight:800; color:var(--text2); flex-shrink:0; }
 .boss-status   { text-align:center; font-size:1rem; font-weight:800; padding:6px; min-height:30px; color:var(--boss-color,#ff4455); }
