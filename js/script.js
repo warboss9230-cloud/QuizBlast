@@ -1018,14 +1018,20 @@ const Game = (() => {
   function startDaily(){
     const p=Player.get();
     if(p.dailyLastDate===today()){alert('✅ Daily challenge already done!\nCome back tomorrow.');return;}
-    QuestionLoader.load(6,'gk').then(bank=>{
+    // Check admin daily override
+    let dcls=6, dsubj='gk';
+    try{
+      const dc=JSON.parse(localStorage.getItem('qb_daily_override')||'null');
+      if(dc){dcls=dc.cls||6;dsubj=dc.subj||'gk';}
+    }catch(e){}
+    QuestionLoader.load(dcls,dsubj).then(bank=>{
       const qs=shuffle(bank).slice(0,10).map(prepQ);
-      _init(qs,{cls:6,subject:'gk',mode:'timer'});
+      _init(qs,{cls:dcls,subject:dsubj,mode:'timer'});
     }).catch(()=>{
       let pool=[];
-      Object.values(BANK[6]||BANK[1]).forEach(arr=>pool.push(...arr));
+      Object.values(BANK[dcls]||BANK[6]||BANK[1]).forEach(arr=>pool.push(...arr));
       const qs=shuffle(pool).slice(0,10).map(prepQ);
-      _init(qs,{cls:6,subject:'gk',mode:'timer'});
+      _init(qs,{cls:dcls,subject:dsubj,mode:'timer'});
     });
   }
 
@@ -1999,6 +2005,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   AdminCfg.load();
   AdminCfg.mergeQuestions();
   AdminCfg.showAnnouncement();
+  // Check if player is banned
+  try{
+    const p=JSON.parse(localStorage.getItem('_sec_qb_player')||localStorage.getItem('qb_player')||'{}');
+    if(p._banned){
+      document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#0d0f1a;color:#fff;font-family:'Nunito',sans-serif;text-align:center;padding:30px"><div style="font-size:3rem;margin-bottom:16px">🚫</div><div style="font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;margin-bottom:8px">Access Restricted</div><div style="font-size:.9rem;color:#9ba3d0;font-weight:700">${p._banReason||'You have been banned.'}</div><div style="font-size:.75rem;color:#6b7280;margin-top:20px;font-weight:700">Contact the game owner for help.</div></div>`;
+      return;
+    }
+  }catch(e){}
   App.init();
   AdminAccess.init();
   FairPlay.init();
