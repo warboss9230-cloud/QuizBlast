@@ -1328,32 +1328,56 @@ const BossMode = (() => {
 
   function start() {
     const sel = SelectScreen.get();
-    boss = pickBoss(sel.cls);
+    // cls may be 0/null if coming from splash — default to 6
+    const cls = Number(sel.cls) || 6;
+    boss = pickBoss(cls);
 
     // Show loading state
-    $('bossEmoji').textContent = '⏳';
-    $('bossName').textContent  = 'Loading…';
+    const em = $('bossEmoji'); if(em) em.textContent = '⏳';
+    const nm = $('bossName');  if(nm) nm.textContent = 'Loading…';
     App.goTo('screen-boss');
 
-    // Load questions from JSON (with BANK fallback)
-    QuestionLoader.load(sel.cls, boss.subject).then(bank => {
-      _initBoss(bank, sel.cls);
+    // Load questions — try JSON first, then BANK fallback
+    const subj = boss.subject;
+    QuestionLoader.load(cls, subj).then(bank => {
+      if(Array.isArray(bank) && bank.length > 0) {
+        _initBoss(bank, cls);
+      } else {
+        _initBoss(_getBankFallback(cls, subj), cls);
+      }
     }).catch(() => {
-      const fallback = (BANK[sel.cls]&&BANK[sel.cls][boss.subject]) ||
-                       (BANK[String(sel.cls)]&&BANK[String(sel.cls)][boss.subject]) || [];
-      _initBoss(fallback, sel.cls);
+      _initBoss(_getBankFallback(cls, subj), cls);
     });
   }
 
-  function _initBoss(bank, cls) {
-    if (!bank.length) {
-      // Fallback: pick from any available subject bank
-      const allSubjects = ['math','science','gk','english','space','hindi','computer','evs','animals','economics'];
-      for (const s of allSubjects) {
-        const b = (BANK[cls]&&BANK[cls][s]) || (BANK[String(cls)]&&BANK[String(cls)][s]) || [];
-        if (b.length) { bank = b; break; }
-      }
+  function _getBankFallback(cls, subj) {
+    // Try exact class+subject
+    let b = (BANK[cls]&&BANK[cls][subj]) || (BANK[String(cls)]&&BANK[String(cls)][subj]) || [];
+    if(b.length) return b;
+    // Try same subject with class 1-6
+    for(let c=6;c>=1;c--) {
+      b = (BANK[c]&&BANK[c][subj]) || [];
+      if(b.length) return b;
     }
+    // Try any subject with this class
+    const allS=['math','science','gk','english','space','hindi','computer','evs','animals','economics'];
+    for(const s of allS) {
+      b = (BANK[cls]&&BANK[cls][s]) || (BANK[6]&&BANK[6][s]) || [];
+      if(b.length) return b;
+    }
+    // Last resort — hardcoded fallback
+    return [
+      {q:'Capital of India?',opts:['New Delhi','Mumbai','Kolkata','Chennai'],ans:0,hint:'Political capital'},
+      {q:'2 + 2 = ?',opts:['4','3','5','6'],ans:0,hint:'Simple addition'},
+      {q:'Sun is a?',opts:['Star','Planet','Moon','Comet'],ans:0,hint:'Center of solar system'},
+      {q:'Water formula?',opts:['H2O','CO2','O2','H2'],ans:0,hint:'Two hydrogen one oxygen'},
+      {q:'How many planets?',opts:['8','9','7','10'],ans:0,hint:'Pluto removed 2006'},
+    ];
+  }
+
+  function _initBoss(bank, cls) {
+    // Final safety — if still empty use hardcoded
+    if (!bank || !bank.length) bank = _getBankFallback(cls, boss?.subject||'gk');
 
     questions = shuffle(bank).map(r => {
       const c = r.opts[r.ans], sh = shuffle([...r.opts]);
@@ -1715,7 +1739,7 @@ const LevelMode = (() => {
    BATTLE HUB
 ════════════════════════════════════════════════════ */
 const BattleHub = {
-  openBoss(){ const subj=SelectScreen.get().subject||'math'; BossMode.start(subj); },
+  openBoss(){ BossMode.start(); },
   openPvP(){  App.goTo('screen-pvp-hub'); PvPOffline.refreshHub(); },
 };
 
