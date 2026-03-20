@@ -1961,11 +1961,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const { user } = await SBAuth.init();
       if (!user) {
-        // Not logged in — show login screen
-        SBLoginUI.show();
-        return;
+        // Auto-login with device ID — no login screen shown
+        await SBAuth.autoLogin();
       }
-      // Logged in — pull profile from Supabase
+      // Pull profile from Supabase
       await SBPlayer.pull();
       // Hook Player.save to also push to Supabase
       const _origSave = Player.save.bind(Player);
