@@ -1,209 +1,1200 @@
-<!-- ══════════════════════════════════════
-     SCREEN 6 — BOSS BATTLE
-══════════════════════════════════════ -->
-<div id="screen-boss" class="screen">
-  <div class="boss-arena">
-    <div class="boss-topbar">
-      <button class="btn-back" onclick="BossMode.quit()">✕</button>
-      <span class="boss-topbar-title">⚔️ Boss Battle</span>
-      <span class="qtb-coins">🪙<span id="bossCoins">0</span></span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>QuizBlast — Owner Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  /* Pastel Dark Admin Theme */
+  --bg:#1a1625;--bg2:#221d30;--bg3:#2a2440;
+  --card:#251f38;--card2:#2f2848;
+  --border:rgba(200,180,255,.14);
+  --text:#f0eaff;--text2:#b8a9d9;
+  --accent:#b39ddb;--purple:#ce93d8;--accent2:#f48fb1;
+  --gold:#ffe082;--green:#a5d6a7;--red:#ef9a9a;
+  --cyan:#80deea;--orange:#ffcc80;
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --r:14px;--r-sm:8px;
+  --tr:all .2s cubic-bezier(.4,0,.2,1);
+  --fh:'Baloo 2',cursive;--fb:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;scroll-behavior:smooth;}
+body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* LOGIN */
+#loginWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+  background:radial-gradient(ellipse at 30% 20%,#2d1f50,transparent 60%),radial-gradient(ellipse at 70% 80%,#2d1535,transparent 55%),#1a1625;}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:40px 32px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);}
+.login-logo{font-size:2.8rem;margin-bottom:12px;display:block;animation:float 2.5s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.login-title{font-family:var(--fh);font-size:1.55rem;font-weight:800;background:linear-gradient(135deg,#fff,var(--purple) 60%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.login-sub{color:var(--text2);font-size:.78rem;font-weight:700;margin:4px 0 28px;}
+.inp{width:100%;padding:13px 16px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--fb);font-size:.9rem;font-weight:700;outline:none;margin-bottom:10px;transition:var(--tr);}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,157,219,.2);}
+.login-err{min-height:18px;font-size:.78rem;font-weight:800;color:var(--red);margin-bottom:8px;}
+.lock-bar{display:none;margin-top:12px;padding:10px;background:rgba(239,154,154,.1);border:1px solid rgba(239,154,154,.3);border-radius:var(--r-sm);font-size:.78rem;font-weight:800;color:var(--red);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:50px;font-family:var(--fb);font-size:.83rem;font-weight:800;cursor:pointer;transition:var(--tr);white-space:nowrap;}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:linear-gradient(135deg,#b39ddb,#ce93d8);color:#2d2040;box-shadow:0 4px 16px rgba(179,157,219,.35);}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-success{background:linear-gradient(135deg,#a5d6a7,#81c784);color:#fff;}
+.btn-danger{background:linear-gradient(135deg,#ef9a9a,#e57373);color:#fff;}
+.btn-warning{background:linear-gradient(135deg,#ffe082,#ffcc80);color:#2d2040;}
+.btn-ghost{background:transparent;color:var(--text2);border:2px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-info{background:linear-gradient(135deg,#80deea,#4dd0e1);color:#fff;}
+.btn-sm{padding:6px 13px;font-size:.75rem;}
+.btn-xs{padding:4px 10px;font-size:.7rem;}
+.btn-full{width:100%;}
+
+/* ADMIN SHELL */
+#adminWrap{display:none;min-height:100vh;flex-direction:column;}
+.adm-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;}
+.adm-brand{display:flex;align-items:center;gap:10px;}
+.adm-brand-icon{font-size:1.4rem;}
+.adm-brand-name{font-family:var(--fh);font-size:1rem;font-weight:800;}
+.adm-badge{background:var(--accent2);color:#fff;font-size:.58rem;font-weight:900;padding:2px 7px;border-radius:20px;letter-spacing:.6px;text-transform:uppercase;}
+.adm-right{display:flex;align-items:center;gap:10px;}
+.adm-clock{font-size:.74rem;font-weight:700;color:var(--text2);}
+.adm-logout{padding:6px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:50px;color:var(--text2);font-family:var(--fb);font-size:.76rem;font-weight:800;cursor:pointer;transition:var(--tr);}
+.adm-logout:hover{border-color:var(--red);color:var(--red);}
+
+.adm-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;padding:0 12px;flex-shrink:0;}
+.adm-tab{display:flex;align-items:center;gap:5px;padding:11px 14px;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--text2);font-family:var(--fb);font-size:.78rem;font-weight:800;cursor:pointer;transition:var(--tr);white-space:nowrap;}
+.adm-tab:hover{color:#b39ddb;}
+.adm-tab.on{color:#ce93d8;border-bottom-color:#b39ddb;}
+.tab-ic{font-size:.9rem;}
+.adm-body{flex:1;overflow-y:auto;}
+.adm-content{padding:16px;max-width:940px;margin:0 auto;}
+.panel{display:none;}
+.panel.on{display:block;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-hd{display:flex;align-items:center;justify-content:space-between;font-family:var(--fh);font-size:.95rem;font-weight:800;margin-bottom:13px;gap:8px;}
+.card-hd-left{display:flex;align-items:center;gap:7px;}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:9px;margin-bottom:14px;}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 8px;text-align:center;}
+.stat-val{font-family:var(--fh);font-size:1.5rem;font-weight:800;color:var(--gold);}
+.stat-lbl{font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-top:3px;}
+
+/* FORM */
+.fgrp{margin-bottom:12px;}
+.flbl{display:block;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:5px;}
+.finp{width:100%;padding:9px 12px;background:var(--bg3);border:2px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--fb);font-size:.86rem;font-weight:700;outline:none;transition:var(--tr);}
+.finp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,157,219,.15);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fcol{display:flex;flex-direction:column;}
+
+/* BADGES */
+.bx{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.67rem;font-weight:800;}
+.bx-green{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25);}
+.bx-gold{background:rgba(255,215,0,.12);color:var(--gold);border:1px solid rgba(255,215,0,.25);}
+.bx-red{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25);}
+.bx-cyan{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.25);}
+.bx-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25);}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:.81rem;}
+.tbl th{background:var(--bg3);color:var(--text2);font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+
+/* CHART */
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;height:90px;padding:4px 0;}
+.cb-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.cb{background:linear-gradient(180deg,var(--accent),var(--purple));border-radius:4px 4px 0 0;width:100%;min-height:3px;transition:height .5s ease;}
+.cb.today{background:linear-gradient(180deg,var(--cyan),var(--accent));}
+.cd{font-size:.58rem;font-weight:800;color:var(--text2);}
+
+/* PROGRESS BAR */
+.pbar-wrap{height:7px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-top:4px;}
+.pbar{height:100%;border-radius:5px;transition:width .6s ease;}
+
+/* DANGER ZONE */
+.danger-zone{border:1px solid rgba(248,113,113,.25);border-radius:var(--r);padding:14px;background:rgba(248,113,113,.04);margin-bottom:14px;}
+.danger-title{font-family:var(--fh);font-size:.88rem;font-weight:800;color:var(--red);margin-bottom:6px;}
+.danger-desc{font-size:.76rem;color:var(--text2);font-weight:700;margin-bottom:10px;}
+.danger-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* BANNED LIST */
+.ban-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:var(--r-sm);margin-bottom:7px;}
+.ban-info{font-size:.82rem;font-weight:700;}
+.ban-time{font-size:.68rem;color:var(--text2);margin-top:2px;}
+
+/* QUIZ BUILDER */
+.qb-q-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;}
+.qb-q-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.qb-q-num{font-size:.65rem;font-weight:900;color:var(--text2);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;}
+.qb-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.qb-opt{display:flex;align-items:center;gap:6px;}
+.opt-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:900;color:#fff;flex-shrink:0;}
+.dot-a{background:#6c63ff;}.dot-b{background:#22d3ee;}.dot-c{background:#fb923c;}.dot-d{background:#f472b6;}
+.cm{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;transition:var(--tr);}
+.cm.on{background:var(--green);border-color:var(--green);}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 17px;font-size:.82rem;font-weight:800;display:none;box-shadow:0 8px 24px rgba(0,0,0,.45);animation:toastPop .22s ease;}
+@keyframes toastPop{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+#toast.ok{border-color:var(--green);color:var(--green);}
+#toast.er{border-color:var(--red);color:var(--red);}
+#toast.in{border-color:var(--cyan);color:var(--cyan);}
+#toast.wa{border-color:var(--gold);color:var(--gold);}
+
+/* CONFIRM */
+#confirmWrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;z-index:500;padding:20px;}
+#confirmWrap.on{display:flex;}
+.confirm-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;max-width:310px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.confirm-ic{font-size:2.4rem;margin-bottom:10px;}
+.confirm-t{font-family:var(--fh);font-size:1.15rem;font-weight:800;margin-bottom:6px;}
+.confirm-m{font-size:.8rem;color:var(--text2);font-weight:700;margin-bottom:20px;line-height:1.5;}
+.confirm-btns{display:flex;gap:8px;}
+.confirm-btns .btn{flex:1;}
+
+.div{height:1px;background:var(--border);margin:12px 0;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px;}
+
+/* ANALYTICS extras */
+.peak-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+.peak-cell{aspect-ratio:1;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800;color:var(--text2);position:relative;}
+.peak-cell.hot{background:rgba(108,99,255,.6);color:#fff;}
+.peak-cell.warm{background:rgba(108,99,255,.3);color:var(--accent);}
+.subj-rank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.subj-rank:last-child{border-bottom:none;}
+.subj-rank-num{font-family:var(--fh);font-size:1.1rem;font-weight:800;color:var(--gold);width:24px;text-align:center;flex-shrink:0;}
+.subj-rank-info{flex:1;}
+.subj-rank-name{font-size:.84rem;font-weight:800;}
+.subj-rank-bar{height:5px;background:var(--bg3);border-radius:3px;margin-top:4px;overflow:hidden;}
+.subj-rank-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--cyan));}
+.badge-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.badge-stat{background:var(--bg3);border-radius:var(--r-sm);padding:10px;text-align:center;}
+.badge-stat-icon{font-size:1.5rem;}
+.badge-stat-name{font-size:.65rem;font-weight:800;color:var(--text2);margin-top:4px;}
+.badge-stat-count{font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);}
+
+/* CUSTOM QUIZ */
+.cq-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;}
+.cq-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.cq-title{font-family:var(--fh);font-size:.9rem;font-weight:800;}
+.cq-meta{font-size:.72rem;color:var(--text2);font-weight:700;}
+
+@media(max-width:580px){
+  .frow{grid-template-columns:1fr;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .qb-opts,.badge-stat-grid{grid-template-columns:1fr;}
+  .adm-content{padding:12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-card">
+    <span class="login-logo">🛡️</span>
+    <div class="login-title">Owner Panel</div>
+    <div class="login-sub">QuizBlast · Authorized Access Only</div>
+    <input id="lPass" type="password" class="inp" placeholder="Admin Password" autocomplete="new-password" maxlength="40"/>
+    <div class="login-err" id="lErr"></div>
+    <button class="btn btn-primary btn-full" onclick="Auth.login()">🔓 Enter Panel</button>
+    <div class="lock-bar" id="lockBar">🔒 Locked. Try again in <span id="lockSec">60</span>s</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminWrap" style="display:none;flex-direction:column">
+
+  <div class="adm-header">
+    <div class="adm-brand">
+      <span class="adm-brand-icon">🚀</span>
+      <span class="adm-brand-name">QuizBlast</span>
+      <span class="adm-badge">Owner</span>
     </div>
-    <div class="boss-section">
-      <div class="boss-monster-wrap" id="bossMonsterWrap">
-        <div class="boss-aura"  id="bossAura"></div>
-        <div class="boss-aura boss-aura2" id="bossAura2"></div>
+    <div class="adm-right">
+      <span class="adm-clock" id="admClock"></span>
+      <button class="adm-logout" onclick="Auth.logout()">🔒 Logout</button>
+    </div>
+  </div>
 
-        <div class="boss-monster" id="bossMonster">
-          <!-- Dark Fantasy SVG Boss Face -->
-          <svg class="boss-svg" id="bossSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="faceGrad" cx="40%" cy="35%" r="65%">
-                <stop offset="0%"   stop-color="var(--boss-color,#ff4455)" stop-opacity=".55"/>
-                <stop offset="100%" stop-color="#060002" stop-opacity="1"/>
-              </radialGradient>
-              <radialGradient id="irisGrad" cx="35%" cy="35%" r="60%">
-                <stop offset="0%"   stop-color="#fff" stop-opacity=".8"/>
-                <stop offset="40%"  stop-color="var(--boss-color,#ff4455)" stop-opacity="1"/>
-                <stop offset="100%" stop-color="#330000" stop-opacity="1"/>
-              </radialGradient>
-              <radialGradient id="hornGrad" cx="30%" cy="20%" r="70%">
-                <stop offset="0%"   stop-color="#fff" stop-opacity=".25"/>
-                <stop offset="100%" stop-color="var(--boss-color,#ff4455)" stop-opacity="1"/>
-              </radialGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="deepglow">
-                <feGaussianBlur stdDeviation="5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
+  <div class="adm-tabs">
+    <button class="adm-tab on" id="t-analytics" onclick="Adm.tab('analytics')"><span class="tab-ic">📊</span>Analytics</button>
+    <button class="adm-tab" id="t-player"    onclick="Adm.tab('player')"   ><span class="tab-ic">👤</span>Player</button>
+    <button class="adm-tab" id="t-content"   onclick="Adm.tab('content')"  ><span class="tab-ic">📚</span>Content</button>
+    <button class="adm-tab" id="t-questions" onclick="Adm.tab('questions')"><span class="tab-ic">❓</span>Questions</button>
+    <button class="adm-tab" id="t-settings"  onclick="Adm.tab('settings')" ><span class="tab-ic">⚙️</span>Settings</button>
+    <button class="adm-tab" id="t-security"  onclick="Adm.tab('security')" ><span class="tab-ic">🔐</span>Security</button>
+  </div>
 
-            <!-- ── Chest (breathing) ── -->
-            <ellipse class="boss-chest" cx="100" cy="195" rx="55" ry="22"/>
+  <div class="adm-body"><div class="adm-content">
 
-            <!-- ── Left horn ── -->
-            <g filter="url(#glow)">
-              <polygon class="boss-horn-shape" points="62,68 44,10 80,62" id="hornL"/>
-              <polygon class="boss-horn-detail" points="66,65 52,22 70,60"/>
-              <polygon class="boss-horn-shine"  points="62,64 50,20 58,58"/>
-              <!-- Small spikes -->
-              <polygon class="boss-horn-shape" points="52,56 38,28 60,52" style="opacity:.7"/>
-            </g>
-            <!-- ── Right horn ── -->
-            <g filter="url(#glow)">
-              <polygon class="boss-horn-shape right" points="138,68 156,10 120,62" id="hornR"/>
-              <polygon class="boss-horn-detail" points="134,65 148,22 130,60"/>
-              <polygon class="boss-horn-shine"  points="138,64 150,20 142,58"/>
-              <polygon class="boss-horn-shape right" points="148,56 162,28 140,52" style="opacity:.7"/>
-            </g>
+    <!-- ══ ANALYTICS ══ -->
+    <div class="panel on" id="p-analytics">
+      <div class="stat-grid" id="statGrid"></div>
 
-            <!-- ── Main face oval ── -->
-            <ellipse cx="100" cy="110" rx="72" ry="80" fill="url(#faceGrad)" stroke="var(--boss-color,#ff4455)" stroke-width="2"/>
-
-            <!-- Face depth / shadow at bottom -->
-            <ellipse cx="100" cy="155" rx="60" ry="30" fill="#000" opacity=".55"/>
-
-            <!-- ── Scale texture (dot grid) ── -->
-            <g class="boss-scale-dot" id="bossScales">
-              <!-- Row 1 -->
-              <circle cx="76"  cy="82"  r="2.2"/><circle cx="88"  cy="80"  r="2.2"/>
-              <circle cx="100" cy="79"  r="2.2"/><circle cx="112" cy="80"  r="2.2"/>
-              <circle cx="124" cy="82"  r="2.2"/>
-              <!-- Row 2 -->
-              <circle cx="70"  cy="94"  r="2.2"/><circle cx="82"  cy="92"  r="2.2"/>
-              <circle cx="94"  cy="91"  r="2.2"/><circle cx="106" cy="91"  r="2.2"/>
-              <circle cx="118" cy="92"  r="2.2"/><circle cx="130" cy="94"  r="2.2"/>
-              <!-- Row 3 cheek scales -->
-              <circle cx="66"  cy="108" r="2.8"/><circle cx="76"  cy="104" r="2.5"/>
-              <circle cx="134" cy="108" r="2.8"/><circle cx="124" cy="104" r="2.5"/>
-            </g>
-
-            <!-- ── Forehead crest ── -->
-            <path d="M78,68 Q88,58 100,62 Q112,58 122,68" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="2.5" opacity=".7" stroke-linecap="round"/>
-            <path d="M85,65 Q100,56 115,65" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".4"/>
-
-            <!-- ── Eye sockets (deep-set) ── -->
-            <ellipse cx="78" cy="104" rx="18" ry="15" class="boss-eye-socket" fill="#000" opacity=".8"/>
-            <ellipse cx="122" cy="104" rx="18" ry="15" class="boss-eye-socket" fill="#000" opacity=".8"/>
-
-            <!-- ── Brow ridge ── -->
-            <path d="M60,92 Q78,82 96,90" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="4" stroke-linecap="round" opacity=".8" id="browL"/>
-            <path d="M140,92 Q122,82 104,90" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="4" stroke-linecap="round" opacity=".8" id="browR"/>
-
-            <!-- ── Left eye ── -->
-            <g id="eyeGroupL" filter="url(#deepglow)">
-              <ellipse cx="78" cy="104" rx="13" ry="11" class="boss-sclera" fill="#080000"/>
-              <!-- Blood veins -->
-              <line class="boss-eye-vein" x1="67" y1="100" x2="74" y2="104"/>
-              <line class="boss-eye-vein" x1="69" y1="108" x2="75" y2="105"/>
-              <!-- Iris -->
-              <ellipse cx="78" cy="104" rx="8" ry="8.5" class="boss-iris" id="irisL" fill="url(#irisGrad)"/>
-              <!-- Pupil (vertical slit — reptilian) -->
-              <ellipse cx="78" cy="104" rx="2.5" ry="7" class="boss-pupil-shape" id="pupilL"/>
-              <!-- Shine -->
-              <ellipse cx="74" cy="100" rx="2.5" ry="1.8" class="boss-eye-shine"/>
-              <ellipse cx="76" cy="98"  rx="1.2" ry=".9" fill="#fff" opacity=".4"/>
-            </g>
-
-            <!-- ── Right eye ── -->
-            <g id="eyeGroupR" filter="url(#deepglow)">
-              <ellipse cx="122" cy="104" rx="13" ry="11" class="boss-sclera" fill="#080000"/>
-              <line class="boss-eye-vein" x1="131" y1="100" x2="126" y2="104"/>
-              <line class="boss-eye-vein" x1="131" y1="108" x2="125" y2="105"/>
-              <ellipse cx="122" cy="104" rx="8" ry="8.5" class="boss-iris" id="irisR" fill="url(#irisGrad)"/>
-              <ellipse cx="122" cy="104" rx="2.5" ry="7" class="boss-pupil-shape" id="pupilR"/>
-              <ellipse cx="118" cy="100" rx="2.5" ry="1.8" class="boss-eye-shine"/>
-              <ellipse cx="120" cy="98"  rx="1.2" ry=".9" fill="#fff" opacity=".4"/>
-            </g>
-
-            <!-- ── Nose bridge ── -->
-            <path d="M95,112 Q97,118 94,124 M105,112 Q103,118 106,124" class="boss-nose-bridge"/>
-            <!-- Nostrils -->
-            <ellipse cx="93"  cy="127" rx="6" ry="4" class="boss-nostril-shape"/>
-            <ellipse cx="107" cy="127" rx="6" ry="4" class="boss-nostril-shape"/>
-            <!-- Nostril flare detail -->
-            <path d="M89,126 Q93,122 97,126" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width=".8" opacity=".5"/>
-            <path d="M103,126 Q107,122 111,126" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width=".8" opacity=".5"/>
-
-            <!-- ── Cheekbones ── -->
-            <path d="M60,108 Q66,120 70,130" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".35" stroke-linecap="round"/>
-            <path d="M140,108 Q134,120 130,130" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".35" stroke-linecap="round"/>
-
-            <!-- ── Scars ── -->
-            <path class="boss-scar" d="M115,88 L125,100"/>
-            <path class="boss-scar" d="M112,91 L120,101"/>
-            <path class="boss-scar" d="M68,130 Q72,136 66,142"/>
-
-            <!-- ── Jaw definition ── -->
-            <path d="M56,128 Q60,158 100,168 Q140,158 144,128" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".4"/>
-
-            <!-- ── Mouth ── -->
-            <!-- Outer mouth -->
-            <path d="M72,148 Q86,140 100,141 Q114,140 128,148 Q120,168 100,170 Q80,168 72,148 Z" class="boss-mouth-outer" id="bossMouthPath"/>
-            <!-- Gums -->
-            <path d="M74,149 Q87,142 100,143 Q113,142 126,149" class="boss-gum-upper" fill="#4a0010"/>
-            <!-- Upper fangs -->
-            <polygon class="boss-fang-shape" points="82,149 80,162 85,149"/>
-            <polygon class="boss-fang-dark"  points="82,149 81,158 84,149"/>
-            <polygon class="boss-fang-shape" points="93,147 91,162 96,147"/>
-            <polygon class="boss-fang-dark"  points="93,147 92,157 95,147"/>
-            <polygon class="boss-fang-shape" points="104,147 102,163 107,147"/>
-            <polygon class="boss-fang-dark"  points="104,147 103,158 106,147"/>
-            <polygon class="boss-fang-shape" points="115,147 113,162 118,147"/>
-            <polygon class="boss-fang-dark"  points="115,147 114,157 117,147"/>
-            <!-- Lower fangs -->
-            <polygon class="boss-fang-shape" points="86,168 84,158 89,168" opacity=".8"/>
-            <polygon class="boss-fang-shape" points="100,170 98,159 103,170" opacity=".8"/>
-            <polygon class="boss-fang-shape" points="114,168 112,158 117,168" opacity=".8"/>
-            <!-- Tongue -->
-            <ellipse cx="100" cy="163" rx="10" ry="5" class="boss-tongue" id="bossTongue"/>
-            <!-- Mouth dark inner -->
-            <path d="M80,155 Q100,160 120,155 Q115,168 100,169 Q85,168 80,155 Z" class="boss-mouth-inner"/>
-
-            <!-- ── Breath particles ── -->
-            <circle class="boss-breath" cx="93"  cy="127" r="4"/>
-            <circle class="boss-breath" cx="107" cy="127" r="3"/>
-            <circle class="boss-breath" cx="100" cy="125" r="5"/>
-
-            <!-- ── Face highlight (top) ── -->
-            <ellipse cx="88" cy="78" rx="22" ry="12" fill="#fff" opacity=".04"/>
-          </svg>
-        </div>
-
-        <!-- Particles container -->
-        <div class="boss-particles" id="bossParticles"></div>
-        <!-- Boss emoji badge -->
-        <div class="boss-emoji-badge" id="bossEmoji">👹</div>
+      <!-- Weekly chart -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📈</span>Weekly Activity</div></div>
+        <div class="chart-wrap" id="weeklyChart"></div>
       </div>
 
-      <div class="boss-name"         id="bossName">Math Monster</div>
-      <div class="boss-title-text"   id="bossTitleText">The Number Cruncher</div>
-      <div class="boss-subject-badge" id="bossSubjectBadge">📐 Math</div>
-      <div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpBar"></div><span id="bossHpText">10 HP</span></div>
+      <!-- Most played subjects -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🏆</span>Subject Ranking (Most Played)</div></div>
+        <div id="subjRanking"></div>
+      </div>
+
+      <!-- Average score per class -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📚</span>Performance per Subject</div></div>
+        <div id="subjPerf"></div>
+      </div>
+
+      <!-- Peak playing time -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>⏰</span>Study Days Calendar</div></div>
+        <p style="font-size:.76rem;color:var(--text2);font-weight:700;margin-bottom:10px">Days when player studied (darker = more activity)</p>
+        <div id="peakGrid"></div>
+      </div>
+
+      <!-- Badge stats -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🏅</span>Badge Unlock Stats</div></div>
+        <div class="badge-stat-grid" id="badgeStats"></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🥇</span>Leaderboard</div>
+          <button class="btn btn-danger btn-xs" onclick="Sec.wipeLB()">🗑 Reset</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Coins</th><th></th></tr></thead>
+            <tbody id="lbBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <div class="player-hp-row">
-      <span class="php-lbl">❤️ Your HP</span>
-      <div class="php-track"><div class="php-fill" id="phpBar"></div></div>
-      <span id="phpText">3 HP</span>
+    <!-- ══ PLAYER ══ -->
+    <div class="panel" id="p-player">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>👤</span>Player Profile</div>
+          <span class="bx bx-green" id="pStatus">Active</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:var(--r-sm)">
+          <div style="font-size:2.5rem;flex-shrink:0" id="pAvatar">👤</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--fh);font-size:1.1rem;font-weight:800" id="pName">—</div>
+            <div style="font-size:.76rem;color:var(--text2);font-weight:700;margin-top:3px" id="pMeta">No data</div>
+          </div>
+        </div>
+        <div class="div"></div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Name</label><input id="e-name" type="text" class="finp" maxlength="20"/></div>
+          <div class="fgrp"><label class="flbl">Coins</label><input id="e-coins" type="number" class="finp" min="0" max="999999"/></div>
+        </div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">XP</label><input id="e-xp" type="number" class="finp" min="0"/></div>
+          <div class="fgrp"><label class="flbl">Level</label><input id="e-level" type="number" class="finp" min="1" max="999"/></div>
+        </div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Total Games</label><input id="e-games" type="number" class="finp" min="0"/></div>
+          <div class="fgrp"><label class="flbl">Day Streak</label><input id="e-streak" type="number" class="finp" min="0"/></div>
+        </div>
+        <!-- Avatar unlock -->
+        <div class="fgrp">
+          <label class="flbl">🎭 Unlock Avatars</label>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(5)">First 5</button>
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(10)">First 10</button>
+            <button class="btn btn-ghost btn-sm" onclick="PA.unlockAvatars(20)">First 20</button>
+            <button class="btn btn-warning btn-sm" onclick="PA.unlockAvatars(100)">All 100 🎁</button>
+          </div>
+        </div>
+        <!-- Special badge -->
+        <div class="fgrp">
+          <label class="flbl">🏅 Give Special Badge</label>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button class="btn btn-info btn-sm" onclick="PA.giveBadge('owner_star','⭐','Star Student','Awarded by Owner')">⭐ Star Student</button>
+            <button class="btn btn-info btn-sm" onclick="PA.giveBadge('champion','🏆','Champion','Top Performer')">🏆 Champion</button>
+            <button class="btn btn-info btn-sm" onclick="PA.giveBadge('genius','🧠','Genius','Exceptional Performance')">🧠 Genius</button>
+            <button class="btn btn-info btn-sm" onclick="PA.giveBadge('legend','👑','Legend','Legendary Player')">👑 Legend</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-success" onclick="PA.save()">💾 Save Changes</button>
+          <button class="btn btn-warning btn-sm" onclick="PA.give(500,0)">+500🪙</button>
+          <button class="btn btn-warning btn-sm" onclick="PA.give(0,200)">+200⚡</button>
+          <button class="btn btn-ghost btn-sm" onclick="PA.unlockBadges()">🏅 All Badges</button>
+        </div>
+      </div>
+
+      <!-- Ban Player -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🚫</span>Ban Player (Cheater Block)</div></div>
+        <p style="font-size:.78rem;color:var(--text2);font-weight:700;margin-bottom:12px">
+          Banned players see a block screen when they open the game. Ban is stored on this device.
+        </p>
+        <div class="frow" style="margin-bottom:10px">
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Reason</label>
+            <input id="banReason" type="text" class="finp" placeholder="e.g. Cheating, Coin manipulation…" maxlength="80"/>
+          </div>
+          <div class="fgrp fcol" style="justify-content:flex-end;margin-bottom:0">
+            <button class="btn btn-danger btn-full" onclick="BanMgr.ban()">🚫 Ban Player</button>
+          </div>
+        </div>
+        <div id="banList"></div>
+      </div>
+
+      <!-- Danger -->
+      <div class="danger-zone">
+        <div class="danger-title">⚠️ Danger Zone</div>
+        <div class="danger-desc">Permanent — cannot be undone.</div>
+        <div class="danger-btns">
+          <button class="btn btn-danger btn-sm" onclick="PA.resetStats()">Reset Stats</button>
+          <button class="btn btn-danger btn-sm" onclick="PA.resetCoins()">Reset Coins</button>
+          <button class="btn btn-danger btn-sm" onclick="PA.wipe()">Delete Player</button>
+        </div>
+      </div>
     </div>
-    <div class="question-strip" id="bossQuestionCard">
-      <div class="qs-text" id="bossQuestionText">Loading…</div>
+
+    <!-- ══ CONTENT ══ -->
+    <div class="panel" id="p-content">
+
+      <!-- Daily Challenge -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>⚡</span>Daily Challenge — Manual Set</div></div>
+        <p style="font-size:.78rem;color:var(--text2);font-weight:700;margin-bottom:12px">
+          Override today's daily challenge subject and class. Players get +200🪙 for completing it.
+        </p>
+        <div class="frow">
+          <div class="fgrp">
+            <label class="flbl">Class</label>
+            <select id="dc-cls" class="finp">
+              <option value="1">Class 1</option><option value="2">Class 2</option>
+              <option value="3">Class 3</option><option value="4">Class 4</option>
+              <option value="5">Class 5</option><option value="6" selected>Class 6</option>
+              <option value="7">Class 7</option><option value="8">Class 8</option>
+              <option value="9">Class 9</option><option value="10">Class 10</option>
+              <option value="11">Class 11</option><option value="12">Class 12</option>
+            </select>
+          </div>
+          <div class="fgrp">
+            <label class="flbl">Subject</label>
+            <select id="dc-subj" class="finp">
+              <option value="math">📐 Math</option><option value="english">📖 English</option>
+              <option value="hindi">🇮🇳 Hindi</option><option value="science">🔬 Science</option>
+              <option value="computer">💻 Computer</option><option value="evs">🌿 EVS</option>
+              <option value="gk" selected>🌍 GK</option><option value="economics">💰 Economics</option>
+              <option value="space">🚀 Space</option><option value="animals">🦒 Animals</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">Custom Message (shown to player)</label>
+          <input id="dc-msg" type="text" class="finp" placeholder="e.g. Today's challenge is GK for Class 6!" maxlength="60"/>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="DailyMgr.set()">⚡ Set Daily Challenge</button>
+          <button class="btn btn-ghost btn-sm" onclick="DailyMgr.reset()">↺ Reset to Default</button>
+        </div>
+        <div id="dcStatus" style="margin-top:10px;font-size:.78rem;color:var(--text2);font-weight:700"></div>
+      </div>
+
+      <!-- Hint Global Toggle -->
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>💡</span>Global Hint Control</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+          <div>
+            <div style="font-size:.88rem;font-weight:800">Auto-show Hints</div>
+            <div style="font-size:.72rem;color:var(--text2);font-weight:700;margin-top:2px">Show hint automatically with every question</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0">
+            <input type="checkbox" id="hintToggle" onchange="ContentMgr.setHint(this.checked)" style="opacity:0;width:0;height:0"/>
+            <span id="hintTrack" style="position:absolute;inset:0;background:var(--bg3);border-radius:24px;cursor:pointer;transition:var(--tr);border:2px solid var(--border);">
+              <span id="hintThumb" style="position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:var(--tr)"></span>
+            </span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border)">
+          <div>
+            <div style="font-size:.88rem;font-weight:800">Powerups Available</div>
+            <div style="font-size:.72rem;color:var(--text2);font-weight:700;margin-top:2px">Allow players to use hint, 50-50, skip, freeze</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0">
+            <input type="checkbox" id="powerupToggle" onchange="ContentMgr.setPowerups(this.checked)" style="opacity:0;width:0;height:0"/>
+            <span id="powerupTrack" style="position:absolute;inset:0;background:var(--bg3);border-radius:24px;cursor:pointer;transition:var(--tr);border:2px solid var(--border);">
+              <span id="powerupThumb" style="position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:var(--tr)"></span>
+            </span>
+          </label>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="ContentMgr.saveContent()">💾 Save Content Settings</button>
+      </div>
+
+      <!-- Custom Quiz -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>🎯</span>Custom Quiz Builder</div>
+          <button class="btn btn-primary btn-sm" onclick="CQBuilder.newQuiz()">+ New Quiz</button>
+        </div>
+        <p style="font-size:.78rem;color:var(--text2);font-weight:700;margin-bottom:12px">
+          Create a custom quiz with hand-picked questions. Player can launch from home screen.
+        </p>
+        <div id="cqList"></div>
+      </div>
+
+      <!-- Custom Quiz Form -->
+      <div class="card" id="cqForm" style="display:none">
+        <div class="card-hd"><div class="card-hd-left"><span>✏️</span>Build Custom Quiz</div></div>
+        <div class="frow" style="margin-bottom:12px">
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Quiz Name</label>
+            <input id="cq-name" type="text" class="finp" placeholder="e.g. Science Week Special" maxlength="40"/>
+          </div>
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Quiz Icon</label>
+            <input id="cq-icon" type="text" class="finp" placeholder="🎯" maxlength="4"/>
+          </div>
+        </div>
+        <div id="cqQuestions"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-bottom:12px" onclick="CQBuilder.addQ()">+ Add Question</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="CQBuilder.save()">💾 Save Quiz</button>
+          <button class="btn btn-ghost" onclick="CQBuilder.cancel()">Cancel</button>
+        </div>
+      </div>
     </div>
-    <div class="options-list" id="bossOptionsGrid"></div>
-    <div class="boss-status" id="bossStatus"></div>
-  </div>
+
+    <!-- ══ QUESTIONS ══ -->
+    <div class="panel" id="p-questions">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>❓</span>Question Bank</div>
+          <button class="btn btn-primary btn-sm" onclick="QA.openForm(-1)">+ Add</button>
+        </div>
+        <div class="frow" style="margin-bottom:12px">
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Class</label>
+            <select id="qCls" class="finp" onchange="QA.load()">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5" selected>5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+          </div>
+          <div class="fgrp" style="margin-bottom:0">
+            <label class="flbl">Subject</label>
+            <select id="qSubj" class="finp" onchange="QA.load()">
+              <option value="math">Math</option><option value="english">English</option>
+              <option value="hindi">Hindi</option><option value="science">Science</option>
+              <option value="computer">Computer</option><option value="evs">EVS</option>
+              <option value="gk">GK</option><option value="economics">Economics</option>
+              <option value="space">Space</option><option value="animals">Animals</option>
+            </select>
+          </div>
+        </div>
+        <div id="qList"></div>
+        <div id="qMeta" style="font-size:.72rem;color:var(--text2);font-weight:700;margin-top:8px"></div>
+      </div>
+      <div class="card" id="qForm" style="display:none">
+        <div class="card-hd"><div class="card-hd-left"><span id="qfIcon">➕</span><span id="qfTitle">Add Question</span></div></div>
+        <div class="fgrp"><label class="flbl">Question</label><input id="qf-q" type="text" class="finp" placeholder="Type question…"/></div>
+        <div class="fgrp"><label class="flbl">Hint</label><input id="qf-hint" type="text" class="finp" placeholder="Short hint…"/></div>
+        <div class="flbl" style="margin-bottom:8px">Options — click ● to mark correct</div>
+        <div class="qb-opts">
+          <div class="qb-opt"><div class="opt-dot dot-a">A</div><input id="qf-a" type="text" class="finp" placeholder="Option A"/><div class="cm" id="qf-cm0" onclick="QA.setAns(0)"></div></div>
+          <div class="qb-opt"><div class="opt-dot dot-b">B</div><input id="qf-b" type="text" class="finp" placeholder="Option B"/><div class="cm" id="qf-cm1" onclick="QA.setAns(1)"></div></div>
+          <div class="qb-opt"><div class="opt-dot dot-c">C</div><input id="qf-c" type="text" class="finp" placeholder="Option C"/><div class="cm" id="qf-cm2" onclick="QA.setAns(2)"></div></div>
+          <div class="qb-opt"><div class="opt-dot dot-d">D</div><input id="qf-d" type="text" class="finp" placeholder="Option D"/><div class="cm" id="qf-cm3" onclick="QA.setAns(3)"></div></div>
+        </div>
+        <input type="hidden" id="qf-idx" value="-1"/>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-primary" onclick="QA.save()">💾 Save</button>
+          <button class="btn btn-ghost" onclick="QA.closeForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="panel" id="p-settings">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🎮</span>Gameplay Settings</div></div>
+        <div class="fgrp"><label class="flbl">Timer Duration (seconds)</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-timer" min="5" max="60" step="5" value="10" oninput="GS.upd('timerSeconds',+this.value,'gs-timer-val','s')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-timer-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">10s</span>
+          </div></div>
+        <div class="fgrp"><label class="flbl">Coins per Correct Answer</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-cc" min="5" max="50" step="5" value="10" oninput="GS.upd('coinCorrect',+this.value,'gs-cc-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-cc-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">10</span>
+          </div></div>
+        <div class="fgrp"><label class="flbl">Wrong Answer Penalty</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-cw" min="0" max="20" step="1" value="5" oninput="GS.upd('coinWrong',+this.value,'gs-cw-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-cw-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">-5</span>
+          </div></div>
+        <div class="fgrp"><label class="flbl">XP per Correct Answer</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-xp" min="5" max="50" step="5" value="10" oninput="GS.upd('xpCorrect',+this.value,'gs-xp-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-xp-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">10</span>
+          </div></div>
+        <div class="fgrp"><label class="flbl">Questions per Quiz</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-qn" min="5" max="20" step="5" value="10" oninput="GS.upd('questionsPerQuiz',+this.value,'gs-qn-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-qn-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">10</span>
+          </div></div>
+        <div class="fgrp"><label class="flbl">Daily Challenge Reward (coins)</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="gs-dr" min="50" max="1000" step="50" value="200" oninput="GS.upd('dailyReward',+this.value,'gs-dr-val','')" style="flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none"/>
+            <span id="gs-dr-val" style="font-family:var(--fh);font-size:.9rem;font-weight:800;color:var(--gold);min-width:38px;text-align:right">200</span>
+          </div></div>
+        <div class="div"></div>
+        <div class="fgrp">
+          <label class="flbl">⏱️ Timer Duration</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <button id="gs-ts-5"  class="btn btn-ghost btn-sm" onclick="GS.setTimer(5)">5s</button>
+            <button id="gs-ts-10" class="btn btn-primary btn-sm" onclick="GS.setTimer(10)">10s</button>
+            <button id="gs-ts-15" class="btn btn-ghost btn-sm" onclick="GS.setTimer(15)">15s</button>
+            <button id="gs-ts-30" class="btn btn-ghost btn-sm" onclick="GS.setTimer(30)">30s</button>
+          </div>
+        </div>
+        <div class="fgrp">
+          <label class="flbl">🎁 Reward Every N Correct Answers</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <button id="gs-re-5"  class="btn btn-primary btn-sm" onclick="GS.setReward(5)">5</button>
+            <button id="gs-re-10" class="btn btn-ghost btn-sm" onclick="GS.setReward(10)">10</button>
+            <button id="gs-re-15" class="btn btn-ghost btn-sm" onclick="GS.setReward(15)">15</button>
+            <button id="gs-re-20" class="btn btn-ghost btn-sm" onclick="GS.setReward(20)">20</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" onclick="GS.save()">💾 Apply to Game</button>
+          <button class="btn btn-ghost" onclick="GS.reset()">↺ Defaults</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>📢</span>Announcement Banner</div></div>
+        <div class="fgrp"><label class="flbl">Message</label><input id="ann-msg" type="text" class="finp" placeholder="e.g. New questions added for Class 10!" maxlength="100"/></div>
+        <div class="frow">
+          <div class="fgrp"><label class="flbl">Type</label>
+            <select id="ann-type" class="finp">
+              <option value="info">ℹ️ Info (blue)</option>
+              <option value="success">✅ Success (green)</option>
+              <option value="warning">⚠️ Warning (yellow)</option>
+              <option value="new">🆕 New Feature (purple)</option>
+            </select></div>
+          <div class="fgrp fcol" style="justify-content:flex-end">
+            <button class="btn btn-primary btn-full" onclick="Ann.save()">📢 Set Banner</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="Ann.clear()">✕ Clear Banner</button>
+      </div>
+    </div>
+
+    <!-- ══ SECURITY ══ -->
+    <div class="panel" id="p-security">
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>🔑</span>Change Password</div></div>
+        <div class="fgrp"><label class="flbl">New Password (min 8 chars)</label><input id="sp-new" type="password" class="finp" maxlength="40"/></div>
+        <div class="fgrp"><label class="flbl">Confirm Password</label><input id="sp-conf" type="password" class="finp" maxlength="40"/></div>
+        <button class="btn btn-primary" onclick="Sec.changePass()">🔑 Update Password</button>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>📋</span>Security Log</div>
+          <button class="btn btn-ghost btn-xs" onclick="Sec.clearLog()">🗑 Clear</button>
+        </div>
+        <div id="secLog" style="font-family:monospace;font-size:.73rem;color:var(--text2);max-height:200px;overflow-y:auto;background:var(--bg3);border-radius:var(--r-sm);padding:12px;line-height:1.9;"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-left"><span>💾</span>Data Backup</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-success" onclick="Bk.export()">📤 Export Backup</button>
+          <label class="btn btn-ghost" style="cursor:pointer">📥 Import<input type="file" accept=".json" style="display:none" onchange="Bk.import(this.files[0])"/></label>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <div class="danger-title">☢️ Nuclear Options</div>
+        <div class="danger-desc">These permanently delete data.</div>
+        <div class="danger-btns">
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeLB()">🗑 Wipe Leaderboard</button>
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeQ()">🗑 Delete Custom Questions</button>
+          <button class="btn btn-danger btn-sm" onclick="Sec.wipeAll()">☢️ Wipe Everything</button>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
 </div>
 
-<!-- Boss Result -->
-<div id="bossResultOverlay" class="overlay" style="display:none">
-  <div class="ov-box card">
-    <div class="ovb-emoji" id="brEmoji">🏆</div>
-    <div class="ovb-title" id="brTitle">Boss Defeated!</div>
-    <div class="ovb-sub"   id="brSub">You earned bonus coins!</div>
-    <div class="ovb-content" id="brReward">+300 🪙</div>
-    <button class="btn btn-primary mt" onclick="BossMode.closeResult()">Collect!</button>
+<div id="confirmWrap">
+  <div class="confirm-box">
+    <div class="confirm-ic" id="ci">⚠️</div>
+    <div class="confirm-t" id="ct">Are you sure?</div>
+    <div class="confirm-m" id="cm">This cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="btn btn-danger" id="cYes">Confirm</button>
+      <button class="btn btn-ghost" onclick="Conf.no()">Cancel</button>
+    </div>
   </div>
 </div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ── Storage keys ── */
+const K={player:'qb_player',lb:'qb_lb',settings:'qb_settings',gameCfg:'qb_admin_gamecfg',
+         customQ:'qb_custom_questions',log:'qb_admin_log',pass:'qb_admin_pass',
+         ann:'qb_announcement',ban:'qb_ban_list',daily:'qb_daily_override',
+         contentCfg:'qb_content_cfg',customQuiz:'qb_custom_quizzes'};
+
+const SUBJECTS=['math','english','hindi','science','computer','evs','gk','economics','space','animals'];
+const SL={math:'📐 Math',english:'📖 English',hindi:'🇮🇳 Hindi',science:'🔬 Science',
+          computer:'💻 Computer',evs:'🌿 EVS',gk:'🌍 GK',economics:'💰 Economics',
+          space:'🚀 Space',animals:'🦒 Animals'};
+
+/* ── Device fingerprint → decrypt player data ── */
+const PROTECTED=['qb_player','qb_lb','qb_settings'];
+const _SK=(()=>{
+  const fp=[navigator.userAgent,navigator.language,screen.colorDepth,
+            screen.width+'x'+screen.height,new Date().getTimezoneOffset()].join('|');
+  let h=0x811c9dc5;
+  for(let i=0;i<fp.length;i++){h^=fp.charCodeAt(i);h=(h*0x01000193)>>>0;}
+  const key=[];let s=h;
+  for(let i=0;i<32;i++){
+    s=(s+0x9e3779b9)>>>0;let z=s;
+    z=((z^(z>>>16))*0x85ebca6b)>>>0;z=((z^(z>>>13))*0xc2b2ae35)>>>0;
+    key.push((z^(z>>>16))&0xff);
+  }
+  return key;
+})();
+function _dec(b64){
+  try{const r=atob(b64);let o='';for(let i=0;i<r.length;i++)o+=String.fromCharCode(r.charCodeAt(i)^_SK[i%32]);return decodeURIComponent(escape(o));}catch{return null;}
+}
+function _sRead(k){
+  try{
+    if(PROTECTED.includes(k)){
+      const raw=localStorage.getItem('_sec_'+k);
+      if(raw){const p=raw.lastIndexOf('|');const e=p!==-1?raw.slice(0,p):raw;const d=_dec(e);if(d)return JSON.parse(d);}
+      const pl=localStorage.getItem(k);return pl?JSON.parse(pl):null;
+    }
+    const v=localStorage.getItem(k);return v?JSON.parse(v):null;
+  }catch{return null;}
+}
+function _sWrite(k,v){localStorage.setItem(k,JSON.stringify(v));localStorage.removeItem('_sec_'+k);}
+function _sDel(k){localStorage.removeItem(k);localStorage.removeItem('_sec_'+k);}
+
+const $=id=>document.getElementById(id);
+const ls={get:k=>_sRead(k),set:(k,v)=>_sWrite(k,v),del:k=>_sDel(k)};
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg,type='ok'){const t=$('toast');t.textContent=msg;t.className=type;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);}
+
+/* ── SHA-256 ── */
+async function sha256(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+
+/* ── AUTH ── */
+const Auth={
+  tries:0,MAX:5,lockUntil:0,_iv:null,
+  async login(){
+    const now=Date.now();
+    if(this.lockUntil>now){$('lockBar').style.display='block';return;}
+    const pw=$('lPass').value;
+    if(!pw){$('lErr').textContent='Enter password.';return;}
+    const h=await sha256(pw);
+    const stored=ls.get(K.pass)||await sha256('admin@quizblast');
+    if(h===stored){
+      this.tries=0;$('loginWrap').style.display='none';
+      $('adminWrap').style.display='flex';$('lErr').textContent='';$('lPass').value='';
+      this.log('LOGIN OK');Adm.init();
+    }else{
+      this.tries++;this.log('LOGIN FAIL #'+this.tries);
+      if(this.tries>=this.MAX){
+        this.lockUntil=now+60000;$('lockBar').style.display='block';
+        let s=60;$('lockSec').textContent=s;
+        clearInterval(this._iv);
+        this._iv=setInterval(()=>{s--;$('lockSec').textContent=s;if(s<=0){clearInterval(this._iv);$('lockBar').style.display='none';this.tries=0;}},1000);
+      }else $('lErr').textContent=`❌ Wrong. ${this.MAX-this.tries} tries left.`;
+    }
+  },
+  logout(){this.log('LOGOUT');$('adminWrap').style.display='none';$('loginWrap').style.display='flex';$('lPass').value='';},
+  log(msg){
+    let logs=ls.get(K.log)||[];
+    const type=msg.startsWith('LOGIN OK')||msg.startsWith('LOGOUT')?'ok':msg.startsWith('LOGIN FAIL')?'err':'warn';
+    logs.unshift({t:new Date().toLocaleString(),msg,type});
+    localStorage.setItem(K.log,JSON.stringify(logs.slice(0,200)));
+  }
+};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('loginWrap').style.display!=='none')Auth.login();if(e.key==='Escape')Conf.no();});
+
+/* ── ADMIN CORE ── */
+const Adm={
+  init(){this.clock();Analytics.render();PA.load();QA.load();GS.load();DailyMgr.load();ContentMgr.load();BanMgr.load();CQBuilder.loadList();Sec.loadLog();},
+  tab(id){
+    document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+    $('t-'+id).classList.add('on');$('p-'+id).classList.add('on');
+    const fn={analytics:()=>Analytics.render(),player:()=>PA.load(),
+              content:()=>{DailyMgr.load();ContentMgr.load();CQBuilder.loadList();},
+              questions:()=>QA.load(),security:()=>Sec.loadLog()};
+    fn[id]?.();
+  },
+  clock(){setInterval(()=>$('admClock').textContent=new Date().toLocaleTimeString(),1000);$('admClock').textContent=new Date().toLocaleTimeString();}
+};
+
+/* ── ANALYTICS ── */
+const Analytics={
+  render(){
+    const p=ls.get(K.player)||{};
+    const sg=$('statGrid');
+    sg.innerHTML=[
+      {v:p.totalGames||0,l:'🎮 Games',c:'--gold'},
+      {v:p.coins||0,l:'🪙 Coins',c:'--gold'},
+      {v:p.level||1,l:'🏅 Level',c:'--purple'},
+      {v:(p.bestAccuracy||0)+'%',l:'🎯 Best Acc',c:'--green'},
+      {v:p.maxStreak||0,l:'🔥 Streak',c:'--orange'},
+      {v:(p.unlockedBadges||[]).length,l:'🏅 Badges',c:'--cyan'},
+      {v:p.bossWins||0,l:'👹 Boss Wins',c:'--accent2'},
+      {v:p.pvpWins||0,l:'⚔️ PvP Wins',c:'--accent'},
+    ].map(s=>`<div class="stat-box"><div class="stat-val" style="color:var(${s.c})">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
+    this.weekly(p);this.subjRanking(p);this.subjPerf(p);this.peak(p);this.badgeStats(p);this.leaderboard();
+  },
+  weekly(p){
+    const wc=$('weeklyChart');if(!wc)return;
+    const sc=Array.isArray(p.weeklyScores)&&p.weeklyScores.length===7?p.weeklyScores:[0,0,0,0,0,0,0];
+    const max=Math.max(...sc,1);const dow=(new Date().getDay()+6)%7;
+    wc.innerHTML=['M','T','W','T','F','S','S'].map((d,i)=>`<div class="cb-wrap"><div class="cb${i===dow?' today':''}" style="height:${Math.round((sc[i]/max)*75)+5}px" title="${sc[i]} pts"></div><div class="cd">${d}</div></div>`).join('');
+  },
+  subjRanking(p){
+    const ss=p.subjectStats||{};
+    const sr=$('subjRanking');if(!sr)return;
+    const ranked=SUBJECTS.map(id=>({id,name:SL[id],played:(ss[id]||{}).played||0})).sort((a,b)=>b.played-a.played);
+    const maxP=Math.max(...ranked.map(r=>r.played),1);
+    sr.innerHTML=ranked.map((r,i)=>`
+      <div class="subj-rank">
+        <div class="subj-rank-num">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+        <div class="subj-rank-info">
+          <div class="subj-rank-name">${r.name}</div>
+          <div class="subj-rank-bar"><div style="height:100%;width:${Math.round(r.played/maxP*100)}%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:3px"></div></div>
+        </div>
+        <span class="bx bx-cyan">${r.played} games</span>
+      </div>`).join('');
+  },
+  subjPerf(p){
+    const ss=p.subjectStats||{};const sc=$('subjPerf');if(!sc)return;
+    sc.innerHTML=SUBJECTS.map(id=>{
+      const st=ss[id]||{played:0,correct:0,total:0};
+      const pct=st.total>0?Math.round((st.correct/st.total)*100):0;
+      const col=pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:.8rem;font-weight:800">${SL[id]}</span>
+          <span style="font-size:.76rem;font-weight:800;color:${col}">${pct}% · ${st.played||0} games · ${st.correct||0}/${st.total||0}</span>
+        </div>
+        <div class="pbar-wrap"><div class="pbar" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+    }).join('');
+  },
+  peak(p){
+    const pg=$('peakGrid');if(!pg)return;
+    const dates=new Set(p.studyDates||[]);
+    const today=new Date().toISOString().slice(0,10);
+    // Show last 28 days
+    const days=[];for(let i=27;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10));}
+    pg.innerHTML=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      ${['M','T','W','T','F','S','S'].map(d=>`<div style="text-align:center;font-size:.6rem;font-weight:800;color:var(--text2);padding:2px">${d}</div>`).join('')}
+      ${days.map(d=>{
+        const isT=d===today;const s=dates.has(d);
+        return `<div title="${d}" style="aspect-ratio:1;border-radius:4px;background:${isT?'var(--cyan)':s?'rgba(108,99,255,.6)':'var(--bg3)'};border:${isT?'2px solid var(--cyan)':'none'}"></div>`;
+      }).join('')}
+    </div>`;
+  },
+  badgeStats(p){
+    const bg=$('badgeStats');if(!bg)return;
+    const unlocked=p.unlockedBadges||[];
+    const badges=[
+      {id:'first_quiz',icon:'🎯',name:'First Step'},{id:'perfect',icon:'💯',name:'Perfect'},
+      {id:'quiz25',icon:'🏅',name:'Dedicated'},{id:'streak7',icon:'🔥',name:'Streak 7'},
+      {id:'boss1',icon:'👹',name:'Boss Win'},{id:'pvp1',icon:'⚔️',name:'PvP Win'},
+      {id:'exam1',icon:'📝',name:'Exam Pass'},{id:'coin1000',icon:'🪙',name:'Rich'},
+      {id:'level5',icon:'⭐',name:'Level 5'}
+    ];
+    bg.innerHTML=badges.map(b=>`
+      <div class="badge-stat ${unlocked.includes(b.id)?'':''}">
+        <div class="badge-stat-icon" style="${unlocked.includes(b.id)?'':'filter:grayscale(1);opacity:.4'}">${b.icon}</div>
+        <div class="badge-stat-name">${b.name}</div>
+        <div class="badge-stat-count">${unlocked.includes(b.id)?'✅':'🔒'}</div>
+      </div>`).join('');
+  },
+  leaderboard(){
+    const lb=$('lbBody');if(!lb)return;
+    const entries=ls.get(K.lb)||[];
+    if(!entries.length){lb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">No scores yet</td></tr>';return;}
+    lb.innerHTML=entries.slice(0,15).map((e,i)=>`
+      <tr>
+        <td><span class="bx ${i<3?'bx-gold':'bx-cyan'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
+        <td><span style="font-size:1.1rem">${e.avatar||'👤'}</span> <strong>${esc(e.name)}</strong></td>
+        <td><strong style="color:var(--gold)">${e.score}pts</strong></td>
+        <td style="color:var(--gold)">🪙${e.coins}</td>
+        <td><button class="btn btn-danger btn-xs" onclick="Analytics.delLB(${i})">🗑</button></td>
+      </tr>`).join('');
+  },
+  delLB(i){Conf.ask('🗑','Remove Entry?','',()=>{const lb=ls.get(K.lb)||[];lb.splice(i,1);ls.set(K.lb,lb);Auth.log('LB_DEL '+i);this.leaderboard();toast('Removed','in');});}
+};
+
+/* ── PLAYER ADMIN ── */
+const PA={
+  load(){
+    const p=ls.get(K.player)||{};
+    $('pAvatar').textContent=p.avatar||'👤';$('pName').textContent=p.name||'No player';
+    $('pMeta').textContent=`Level ${p.level||1} · ${p.coins||0} coins · ${p.xp||0} XP · ${p.totalGames||0} games`;
+    $('pStatus').textContent=p.name&&p.name!=='Player'?'Active':'New';
+    $('pStatus').className='bx '+(p.name&&p.name!=='Player'?'bx-green':'bx-purple');
+    $('e-name').value=p.name||'';$('e-coins').value=p.coins||0;$('e-xp').value=p.xp||0;
+    $('e-level').value=p.level||1;$('e-games').value=p.totalGames||0;$('e-streak').value=p.dayStreak||0;
+  },
+  save(){
+    const p=ls.get(K.player)||{};
+    const name=$('e-name').value.trim();const coins=+$('e-coins').value;const xp=+$('e-xp').value;
+    const level=+$('e-level').value;const games=+$('e-games').value;const streak=+$('e-streak').value;
+    if(!name){toast('Name required!','er');return;}
+    Object.assign(p,{name,coins,xp,level,totalGames:games,dayStreak:streak});
+    ls.set(K.player,p);Auth.log(`PLAYER_SAVE name=${name} coins=${coins} level=${level}`);
+    this.load();toast('✅ Player saved!');
+  },
+  give(coins,xp){
+    const p=ls.get(K.player)||{};
+    if(coins)p.coins=(p.coins||0)+coins;
+    if(xp){p.xp=(p.xp||0)+xp;p.totalXP=(p.totalXP||0)+xp;}
+    ls.set(K.player,p);Auth.log(`GIVE coins=${coins} xp=${xp}`);
+    this.load();toast(`${coins?'+'+coins+'🪙':''}${xp?' +'+xp+'⚡':''} given!`);
+  },
+  unlockAvatars(count=100){
+    const label=count>=100?'All 100 Avatars':'First '+count+' Avatars';
+    Conf.ask('🎭','Unlock '+label+'?','Player gets '+label.toLowerCase()+' instantly.',()=>{
+      const p=ls.get(K.player)||{};
+      p.unlockedAvatars=Array.from({length:count},(_,i)=>i);
+      ls.set(K.player,p);Auth.log('UNLOCK_AV_'+count);this.load();toast('🎭 '+label+' unlocked!');
+    });
+  },
+  giveBadge(id,icon,name,desc){
+    Conf.ask(icon,'Give "'+name+'" Badge?','Player will receive this special badge.',()=>{
+      const p=ls.get(K.player)||{};
+      if(!p.unlockedBadges)p.unlockedBadges=[];
+      if(!p.unlockedBadges.includes(id))p.unlockedBadges.push(id);
+      ls.set(K.player,p);Auth.log('GIVE_BADGE '+id);toast(icon+' '+name+' badge given!');
+    });
+  },
+  unlockBadges(){
+    Conf.ask('🏅','Unlock All Badges?','',()=>{
+      const p=ls.get(K.player)||{};p._adminBadgesUnlocked=true;
+      ls.set(K.player,p);Auth.log('UNLOCK_ALL_BADGES');toast('🏅 All badges unlocked!');
+    });
+  },
+  resetStats(){Conf.ask('⚠️','Reset Stats?','Games accuracy streaks badges reset. Coins/XP kept.',()=>{const p=ls.get(K.player)||{};Object.assign(p,{totalGames:0,bestAccuracy:0,maxStreak:0,dayStreak:0,bossWins:0,pvpWins:0,pvpLosses:0,flawlessGames:0,puristWins:0,subjectStats:{},unlockedBadges:[],weeklyScores:[0,0,0,0,0,0,0]});ls.set(K.player,p);Auth.log('RESET_STATS');this.load();toast('Stats reset','in');});},
+  resetCoins(){Conf.ask('🪙','Reset Coins to 100?','',()=>{const p=ls.get(K.player)||{};p.coins=100;ls.set(K.player,p);Auth.log('RESET_COINS');this.load();toast('🪙 Reset','in');});},
+  wipe(){Conf.ask('💀','DELETE Player?','ALL player data permanently erased.',()=>{ls.del(K.player);Auth.log('WIPE_PLAYER');this.load();toast('Player deleted','in');});}
+};
+
+/* ── BAN MANAGER ── */
+const BanMgr={
+  getBans(){return JSON.parse(localStorage.getItem(K.ban)||'[]');},
+  load(){
+    const bl=$('banList');if(!bl)return;
+    const bans=this.getBans();
+    if(!bans.length){bl.innerHTML='<div style="color:var(--text2);font-size:.8rem;font-weight:700;padding:8px 0">No banned players.</div>';return;}
+    bl.innerHTML=bans.map((b,i)=>`
+      <div class="ban-item">
+        <div><div class="ban-info">🚫 ${esc(b.name)}</div><div class="ban-time">${b.reason} · ${b.date}</div></div>
+        <button class="btn btn-success btn-xs" onclick="BanMgr.unban(${i})">Unban</button>
+      </div>`).join('');
+  },
+  ban(){
+    const p=ls.get(K.player)||{};
+    if(!p.name||p.name==='Player'){toast('No active player to ban!','er');return;}
+    const reason=$('banReason').value.trim()||'Cheating';
+    Conf.ask('🚫',`Ban ${p.name}?`,`Reason: ${reason}`,()=>{
+      const bans=this.getBans();
+      bans.push({name:p.name,avatar:p.avatar||'👤',reason,date:new Date().toLocaleDateString()});
+      localStorage.setItem(K.ban,JSON.stringify(bans));
+      // Set ban flag in player data
+      const pp=ls.get(K.player)||{};pp._banned=true;pp._banReason=reason;ls.set(K.player,pp);
+      Auth.log('BAN: '+p.name+' reason='+reason);$('banReason').value='';this.load();toast('🚫 '+p.name+' banned!','wa');
+    });
+  },
+  unban(i){
+    const bans=this.getBans();const name=bans[i]?.name;bans.splice(i,1);
+    localStorage.setItem(K.ban,JSON.stringify(bans));
+    const pp=ls.get(K.player)||{};if(pp._banned){pp._banned=false;delete pp._banReason;ls.set(K.player,pp);}
+    Auth.log('UNBAN: '+name);this.load();toast('Unbanned!');
+  }
+};
+
+/* ── DAILY CHALLENGE MANAGER ── */
+const DailyMgr={
+  load(){
+    const dc=JSON.parse(localStorage.getItem(K.daily)||'null');
+    if(dc){
+      $('dc-cls').value=dc.cls||6;$('dc-subj').value=dc.subj||'gk';
+      $('dc-msg').value=dc.msg||'';
+      $('dcStatus').textContent=`✅ Active: Class ${dc.cls} ${SL[dc.subj]} — "${dc.msg||'Daily Challenge'}" (set ${dc.date})`;
+      $('dcStatus').style.color='var(--green)';
+    }else{$('dcStatus').textContent='Using default (random GK Class 6)';$('dcStatus').style.color='var(--text2)';}
+  },
+  set(){
+    const cls=$('dc-cls').value;const subj=$('dc-subj').value;const msg=$('dc-msg').value.trim();
+    const dc={cls:+cls,subj,msg:msg||`Class ${cls} ${SL[subj]} Challenge!`,date:new Date().toLocaleDateString()};
+    localStorage.setItem(K.daily,JSON.stringify(dc));
+    Auth.log(`DAILY_SET cls=${cls} subj=${subj}`);this.load();toast('⚡ Daily challenge set!');
+  },
+  reset(){localStorage.removeItem(K.daily);Auth.log('DAILY_RESET');this.load();toast('Daily reset to default','in');}
+};
+
+/* ── CONTENT MANAGER ── */
+const ContentMgr={
+  load(){
+    const cfg=JSON.parse(localStorage.getItem(K.contentCfg)||'{}');
+    this.setToggle('hintToggle','hintTrack','hintThumb',cfg.autoHint||false);
+    this.setToggle('powerupToggle','powerupTrack','powerupThumb',cfg.powerups!==false);
+  },
+  setToggle(cbId,trackId,thumbId,val){
+    const cb=$(cbId);if(cb)cb.checked=val;
+    const tr=$(trackId);if(tr){tr.style.background=val?'var(--accent)':'var(--bg3)';tr.style.borderColor=val?'var(--accent)':'var(--border)';}
+    const th=$(thumbId);if(th)th.style.transform=val?'translateX(22px)':'none';
+  },
+  setHint(v){this.setToggle('hintToggle','hintTrack','hintThumb',v);},
+  setPowerups(v){this.setToggle('powerupToggle','powerupTrack','powerupThumb',v);},
+  saveContent(){
+    const cfg={autoHint:$('hintToggle')?.checked||false,powerups:$('powerupToggle')?.checked!==false};
+    localStorage.setItem(K.contentCfg,JSON.stringify(cfg));
+    // Push to game settings
+    const gs=JSON.parse(localStorage.getItem(K.settings)||'{}');
+    gs.autoHint=cfg.autoHint;localStorage.setItem(K.settings,JSON.stringify(gs));
+    Auth.log('CONTENT_CFG saved');toast('✅ Content settings saved!');
+  }
+};
+
+/* ── CUSTOM QUIZ BUILDER ── */
+const CQBuilder={
+  _editing:null,_qCount:0,
+  getAll(){return JSON.parse(localStorage.getItem(K.customQuiz)||'[]');},
+  loadList(){
+    const cl=$('cqList');if(!cl)return;
+    const quizzes=this.getAll();
+    if(!quizzes.length){cl.innerHTML='<div style="color:var(--text2);font-size:.8rem;font-weight:700;padding:8px 0">No custom quizzes yet.</div>';return;}
+    cl.innerHTML=quizzes.map((q,i)=>`
+      <div class="cq-card">
+        <div class="cq-hd">
+          <div><span style="font-size:1.4rem">${q.icon||'🎯'}</span> <span class="cq-title">${esc(q.name)}</span></div>
+          <div style="display:flex;gap:6px">
+            <span class="bx bx-cyan">${(q.questions||[]).length} Qs</span>
+            <button class="btn btn-ghost btn-xs" onclick="CQBuilder.edit(${i})">✏️</button>
+            <button class="btn btn-danger btn-xs" onclick="CQBuilder.del(${i})">🗑</button>
+          </div>
+        </div>
+        <div class="cq-meta">Active in game · Players can select from home</div>
+      </div>`).join('');
+  },
+  newQuiz(){
+    this._editing=null;this._qCount=0;
+    $('cq-name').value='';$('cq-icon').value='🎯';
+    $('cqQuestions').innerHTML='';$('cqForm').style.display='block';
+    this.addQ();$('cqForm').scrollIntoView({behavior:'smooth'});
+  },
+  edit(i){
+    const q=this.getAll()[i];if(!q)return;
+    this._editing=i;$('cq-name').value=q.name;$('cq-icon').value=q.icon||'🎯';
+    $('cqQuestions').innerHTML='';this._qCount=0;
+    (q.questions||[]).forEach(qq=>this.addQ(qq));
+    $('cqForm').style.display='block';$('cqForm').scrollIntoView({behavior:'smooth'});
+  },
+  addQ(data=null){
+    const i=this._qCount++;const d=$('cqQuestions');
+    const div=document.createElement('div');div.className='qb-q-row';div.id='cqq-'+i;
+    div.innerHTML=`
+      <div class="qb-q-hd">
+        <span class="qb-q-num">Q${i+1}</span>
+        <input type="text" class="finp" id="cqq-q-${i}" placeholder="Question…" value="${esc(data?.q||'')}" style="flex:1"/>
+        <button class="btn btn-danger btn-xs" onclick="document.getElementById('cqq-${i}').remove()">✕</button>
+      </div>
+      <div class="qb-opts">
+        <div class="qb-opt"><div class="opt-dot dot-a">A</div><input type="text" class="finp" id="cqq-a-${i}" placeholder="Option A" value="${esc(data?.opts?.[0]||'')}"/><div class="cm${data?.ans===0?' on':''}" id="cqq-cm-${i}-0" onclick="CQBuilder.setAns(${i},0)"></div></div>
+        <div class="qb-opt"><div class="opt-dot dot-b">B</div><input type="text" class="finp" id="cqq-b-${i}" placeholder="Option B" value="${esc(data?.opts?.[1]||'')}"/><div class="cm${data?.ans===1?' on':''}" id="cqq-cm-${i}-1" onclick="CQBuilder.setAns(${i},1)"></div></div>
+        <div class="qb-opt"><div class="opt-dot dot-c">C</div><input type="text" class="finp" id="cqq-c-${i}" placeholder="Option C" value="${esc(data?.opts?.[2]||'')}"/><div class="cm${data?.ans===2?' on':''}" id="cqq-cm-${i}-2" onclick="CQBuilder.setAns(${i},2)"></div></div>
+        <div class="qb-opt"><div class="opt-dot dot-d">D</div><input type="text" class="finp" id="cqq-d-${i}" placeholder="Option D" value="${esc(data?.opts?.[3]||'')}"/><div class="cm${data?.ans===3?' on':''}" id="cqq-cm-${i}-3" onclick="CQBuilder.setAns(${i},3)"></div></div>
+      </div>
+      <input type="hidden" id="cqq-ans-${i}" value="${data?.ans??0}"/>
+      <input type="text" class="finp" id="cqq-hint-${i}" placeholder="💡 Hint (optional)" value="${esc(data?.hint||'')}" style="margin-top:8px;font-size:.78rem"/>`;
+    d.appendChild(div);
+    // Set correct mark
+    if(data?.ans!==undefined) this.setAns(i,data.ans);
+  },
+  setAns(qi,ai){
+    $('cqq-ans-'+qi).value=ai;
+    [0,1,2,3].forEach(j=>{const m=$(`cqq-cm-${qi}-${j}`);if(m)m.classList.toggle('on',j===ai);});
+  },
+  save(){
+    const name=$('cq-name').value.trim();if(!name){toast('Quiz name required!','er');return;}
+    const icon=$('cq-icon').value.trim()||'🎯';
+    const questions=[];
+    document.querySelectorAll('[id^="cqq-q-"]').forEach(el=>{
+      const i=el.id.split('-').pop();
+      const q=el.value.trim();if(!q)return;
+      const opts=[$(`cqq-a-${i}`)?.value.trim(),$(`cqq-b-${i}`)?.value.trim(),$(`cqq-c-${i}`)?.value.trim(),$(`cqq-d-${i}`)?.value.trim()];
+      if(opts.some(o=>!o)){return;}
+      questions.push({q,opts,ans:+($(`cqq-ans-${i}`)?.value||0),hint:$(`cqq-hint-${i}`)?.value.trim()||''});
+    });
+    if(!questions.length){toast('Add at least 1 complete question!','er');return;}
+    const all=this.getAll();const quiz={name,icon,questions,created:new Date().toLocaleDateString()};
+    if(this._editing!==null)all[this._editing]=quiz;else all.push(quiz);
+    localStorage.setItem(K.customQuiz,JSON.stringify(all));
+    Auth.log(`CQ_SAVE name=${name} qs=${questions.length}`);
+    this.cancel();this.loadList();toast(`✅ "${name}" saved with ${questions.length} questions!`);
+  },
+  del(i){Conf.ask('🗑','Delete Quiz?','',()=>{const all=this.getAll();all.splice(i,1);localStorage.setItem(K.customQuiz,JSON.stringify(all));this.loadList();toast('Quiz deleted','in');});},
+  cancel(){$('cqForm').style.display='none';$('cqQuestions').innerHTML='';this._editing=null;this._qCount=0;}
+};
+
+/* ── QUESTION ADMIN ── */
+const QA={
+  ansIdx:0,
+  getQ(cls,subj){return(JSON.parse(localStorage.getItem(K.customQ)||'{}'))[`${cls}_${subj}`]||[];},
+  setQ(cls,subj,arr){const all=JSON.parse(localStorage.getItem(K.customQ)||'{}');all[`${cls}_${subj}`]=arr;localStorage.setItem(K.customQ,JSON.stringify(all));},
+  load(){
+    const cls=$('qCls').value,subj=$('qSubj').value;const qs=this.getQ(cls,subj);
+    const list=$('qList');
+    if(!qs.length){list.innerHTML='<div style="color:var(--text2);font-size:.82rem;font-weight:700;padding:12px 0">No custom questions. Click "+ Add" to create.</div>';$('qMeta').textContent='';return;}
+    list.innerHTML=qs.map((q,i)=>`
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:.65rem;font-weight:900;color:var(--text2);text-transform:uppercase">Q${i+1}</span>
+          <span style="flex:1;font-size:.85rem;font-weight:700">${esc(q.q)}</span>
+          <button class="btn btn-primary btn-xs" onclick="QA.openForm(${i})">✏️</button>
+          <button class="btn btn-danger btn-xs" onclick="QA.del(${i})">🗑</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.78rem">
+          ${q.opts.map((o,oi)=>`<div style="display:flex;align-items:center;gap:5px"><div class="opt-dot ${['dot-a','dot-b','dot-c','dot-d'][oi]}" style="width:20px;height:20px;font-size:.62rem">${'ABCD'[oi]}</div><span style="${oi===q.ans?'color:var(--green);font-weight:900':''}">${esc(o)}${oi===q.ans?' ✓':''}</span></div>`).join('')}
+        </div>
+        ${q.hint?`<div style="font-size:.68rem;color:var(--gold);margin-top:6px;font-weight:700">💡 ${esc(q.hint)}</div>`:''}
+      </div>`).join('');
+    $('qMeta').textContent=`${qs.length} custom question${qs.length!==1?'s':''} · Class ${cls} ${SL[subj]}`;
+  },
+  openForm(idx){
+    const cls=$('qCls').value,subj=$('qSubj').value;this.ansIdx=0;
+    if(idx>=0){const q=this.getQ(cls,subj)[idx];if(!q)return;$('qf-q').value=q.q;$('qf-hint').value=q.hint||'';$('qf-a').value=q.opts[0]||'';$('qf-b').value=q.opts[1]||'';$('qf-c').value=q.opts[2]||'';$('qf-d').value=q.opts[3]||'';this.ansIdx=q.ans;$('qfIcon').textContent='✏️';$('qfTitle').textContent='Edit Question';}
+    else{$('qf-q').value='';$('qf-hint').value='';$('qf-a').value='';$('qf-b').value='';$('qf-c').value='';$('qf-d').value='';$('qfIcon').textContent='➕';$('qfTitle').textContent='Add Question';}
+    $('qf-idx').value=idx;this.syncMarks();$('qForm').style.display='block';$('qForm').scrollIntoView({behavior:'smooth'});
+  },
+  setAns(i){this.ansIdx=i;this.syncMarks();},
+  syncMarks(){[0,1,2,3].forEach(i=>$('qf-cm'+i)?.classList.toggle('on',i===this.ansIdx));},
+  save(){
+    const q=$('qf-q').value.trim();if(!q){toast('Question required!','er');return;}
+    const opts=[$('qf-a'),$('qf-b'),$('qf-c'),$('qf-d')].map(i=>i.value.trim());
+    if(opts.some(o=>!o)){toast('All 4 options required!','er');return;}
+    const obj={q,opts,ans:this.ansIdx,hint:$('qf-hint').value.trim()};
+    const cls=$('qCls').value,subj=$('qSubj').value;
+    const arr=this.getQ(cls,subj);const idx=+$('qf-idx').value;
+    if(idx>=0)arr[idx]=obj;else arr.push(obj);
+    this.setQ(cls,subj,arr);Auth.log(`Q_SAVE cls=${cls} subj=${subj}`);this.closeForm();this.load();toast(idx>=0?'✅ Updated!':'✅ Added!');
+  },
+  del(i){Conf.ask('🗑','Delete Question?','',()=>{const cls=$('qCls').value,subj=$('qSubj').value;const arr=this.getQ(cls,subj);arr.splice(i,1);this.setQ(cls,subj,arr);Auth.log('Q_DEL');this.load();toast('Deleted','in');});},
+  closeForm(){$('qForm').style.display='none';}
+};
+
+/* ── GAME SETTINGS ── */
+const GS={
+  DEF:{timerSeconds:10,coinCorrect:10,coinWrong:5,xpCorrect:10,questionsPerQuiz:10,dailyReward:200},
+  get(){return{...this.DEF,...(JSON.parse(localStorage.getItem(K.gameCfg)||'{}'))};},
+  load(){
+    const c=this.get();
+    const set=(id,v,sfx='')=>{const el=$(id);if(el)el.value=v;const lb=$(id+'-val');if(lb)lb.textContent=v+sfx;};
+    set('gs-timer',c.timerSeconds,'s');set('gs-cc',c.coinCorrect);
+    $('gs-cw-val')&&($('gs-cw-val').textContent='-'+c.coinWrong);$('gs-cw')&&($('gs-cw').value=c.coinWrong);
+    set('gs-xp',c.xpCorrect);set('gs-qn',c.questionsPerQuiz);set('gs-dr',c.dailyReward);
+    // Sync timer buttons
+    const t=c.timerSeconds||10;
+    [5,10,15,30].forEach(v=>{const b=$('gs-ts-'+v);if(b)b.className=v===t?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';});
+    // Sync reward buttons
+    const r=c.rewardEvery||5;
+    [5,10,15,20].forEach(v=>{const b=$('gs-re-'+v);if(b)b.className=v===r?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';});
+  },
+  upd(key,val,lblId,sfx=''){
+    const c=this.get();c[key]=val;localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    const l=$(lblId);if(l)l.textContent=(key==='coinWrong'?'-':'')+val+sfx;
+  },
+  setTimer(v){
+    const c=this.get();c.timerSeconds=v;localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    [5,10,15,30].forEach(t=>{const b=$('gs-ts-'+t);if(b){b.className=t===v?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';}});
+    toast('Timer set to '+v+'s');
+  },
+  setReward(v){
+    const c=this.get();c.rewardEvery=v;localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    [5,10,15,20].forEach(n=>{const b=$('gs-re-'+n);if(b){b.className=n===v?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';}});
+    toast('Reward every '+v+' correct');
+  },
+  save(){
+    const c=this.get();localStorage.setItem(K.gameCfg,JSON.stringify(c));
+    const gs=JSON.parse(localStorage.getItem(K.settings)||'{}');
+    gs.timerSeconds=c.timerSeconds;gs.rewardEvery=c.rewardEvery||5;
+    localStorage.setItem(K.settings,JSON.stringify(gs));Auth.log('GS_SAVED');toast('✅ Settings applied!');
+  },
+  reset(){localStorage.removeItem(K.gameCfg);this.load();Auth.log('GS_RESET');toast('Reset to defaults','in');}
+};
+
+/* ── ANNOUNCEMENT ── */
+const Ann={
+  save(){const msg=$('ann-msg').value.trim();const type=$('ann-type').value;if(!msg){toast('Message empty!','er');return;}localStorage.setItem(K.ann,JSON.stringify({msg,type,date:new Date().toISOString()}));Auth.log('ANN_SET: '+msg);toast('📢 Banner set!');},
+  clear(){localStorage.removeItem(K.ann);$('ann-msg').value='';toast('Banner cleared','in');}
+};
+
+/* ── SECURITY ── */
+const Sec={
+  async changePass(){
+    const np=$('sp-new').value,cp=$('sp-conf').value;
+    if(!np||!cp){toast('Fill both fields!','er');return;}
+    if(np!==cp){toast('Passwords do not match!','er');return;}
+    if(np.length<8){toast('Min 8 chars!','er');return;}
+    const h=await sha256(np);localStorage.setItem(K.pass,h);
+    $('sp-new').value='';$('sp-conf').value='';Auth.log('PASS_CHANGED');toast('✅ Password updated!');
+  },
+  loadLog(){
+    const sl=$('secLog');if(!sl)return;
+    const logs=JSON.parse(localStorage.getItem(K.log)||'[]');
+    sl.innerHTML=logs.length?logs.map(l=>`<div style="color:${l.type==='ok'?'var(--green)':l.type==='err'?'var(--red)':'var(--gold)'}">[${l.t}] ${l.msg}</div>`).join(''):'<span style="color:var(--green)">No events yet.</span>';
+  },
+  clearLog(){Conf.ask('🗑','Clear Log?','',()=>{localStorage.removeItem(K.log);this.loadLog();toast('Log cleared','in');});},
+  wipeLB(){Conf.ask('🗑','Wipe Leaderboard?','',()=>{ls.del(K.lb);Auth.log('WIPE_LB');Analytics.leaderboard();toast('Wiped','in');});},
+  wipeQ(){Conf.ask('🗑','Delete Custom Questions?','',()=>{localStorage.removeItem(K.customQ);Auth.log('WIPE_Q');QA.load();toast('Deleted','in');});},
+  wipeAll(){Conf.ask('☢️','WIPE ALL DATA?','Player leaderboard questions settings — all gone.',()=>{const keep=[K.pass,K.log];Object.keys(localStorage).filter(k=>!keep.includes(k)).forEach(k=>localStorage.removeItem(k));Auth.log('WIPE_ALL');Adm.init();toast('All wiped','in');});}
+};
+
+/* ── BACKUP ── */
+const Bk={
+  export(){
+    const data={v:'3.1',exportedAt:new Date().toISOString(),player:ls.get(K.player),leaderboard:ls.get(K.lb),settings:ls.get(K.settings),gameCfg:ls.get(K.gameCfg),customQ:JSON.parse(localStorage.getItem(K.customQ)||'{}'),customQuiz:JSON.parse(localStorage.getItem(K.customQuiz)||'[]'),ban:JSON.parse(localStorage.getItem(K.ban)||'[]')};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');
+    a.href=url;a.download=`quizblast_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);Auth.log('EXPORT');toast('📤 Exported!');
+  },
+  import(file){if(!file)return;Conf.ask('📥','Import Backup?','Overwrites current data.',()=>{const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.v!=='3.1'){toast('Wrong version!','er');return;}if(d.player)ls.set(K.player,d.player);if(d.leaderboard)ls.set(K.lb,d.leaderboard);if(d.settings)ls.set(K.settings,d.settings);if(d.gameCfg)localStorage.setItem(K.gameCfg,JSON.stringify(d.gameCfg));if(d.customQ)localStorage.setItem(K.customQ,JSON.stringify(d.customQ));if(d.customQuiz)localStorage.setItem(K.customQuiz,JSON.stringify(d.customQuiz));Auth.log('IMPORT');Adm.init();toast('📥 Restored!');}catch{toast('Invalid file!','er');}};rd.readAsText(file);});}
+};
+
+/* ── CONFIRM ── */
+const Conf={_cb:null,ask(ic,t,m,cb){$('ci').textContent=ic;$('ct').textContent=t;$('cm').textContent=m;this._cb=cb;$('confirmWrap').classList.add('on');},no(){$('confirmWrap').classList.remove('on');this._cb=null;}};
+$('cYes').onclick=()=>{if(Conf._cb)Conf._cb();Conf.no();};
+</script>
+</body>
+</html>
