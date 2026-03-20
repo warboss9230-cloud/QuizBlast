@@ -412,7 +412,7 @@ body.overlay-open .fab-sound {
 .boss-arena {
   background: radial-gradient(ellipse at 50% -10%, #1a0008 0%, #0d0f1a 60%);
   min-height:100vh; display:flex; flex-direction:column;
-  position:relative; overflow:hidden;
+  position:relative; overflow-y:auto; overflow-x:hidden;
 }
 /* Fog / atmosphere at top */
 .boss-arena::before {
@@ -434,17 +434,17 @@ body.overlay-open .fab-sound {
 /* ── Boss section ── */
 .boss-section {
   display:flex; flex-direction:column; align-items:center;
-  padding:0 14px 8px; gap:6px;
+  padding:0 14px 6px; gap:5px;
   position:relative; z-index:1;
 }
 
 /* ── Monster wrap — half screen ── */
 .boss-monster-wrap {
   position:relative;
-  width: min(220px, 55vw);
-  height: min(220px, 55vw);
+  width: min(180px, 46vw);
+  height: min(180px, 46vw);
   display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; margin-top:6px;
+  flex-shrink:0; margin-top:4px;
 }
 
 /* ── Screen shake ── */
