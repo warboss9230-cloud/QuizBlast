@@ -241,6 +241,39 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 
     <!-- ══ ANALYTICS ══ -->
     <div class="panel on" id="p-analytics">
+
+      <!-- Global Supabase Stats -->
+      <div class="card" id="sbStatsCard">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>🌐</span>Global Stats (Supabase)</div>
+          <button class="btn btn-ghost btn-xs" onclick="SBStats.load()">🔄 Refresh</button>
+        </div>
+        <div class="stat-grid" id="sbStatGrid">
+          <div class="stat-box"><div class="stat-val" id="sbTotalUsers" style="color:var(--cyan)">—</div><div class="stat-lbl">👥 Total Users</div></div>
+          <div class="stat-box"><div class="stat-val" id="sbActiveToday" style="color:var(--green)">—</div><div class="stat-lbl">✅ Active Today</div></div>
+          <div class="stat-box"><div class="stat-val" id="sbActive7d" style="color:var(--purple)">—</div><div class="stat-lbl">📅 Last 7 Days</div></div>
+          <div class="stat-box"><div class="stat-val" id="sbTotalGames" style="color:var(--gold)">—</div><div class="stat-lbl">🎮 Total Games</div></div>
+          <div class="stat-box"><div class="stat-val" id="sbNewToday" style="color:var(--accent2)">—</div><div class="stat-lbl">🆕 New Today</div></div>
+          <div class="stat-box"><div class="stat-val" id="sbTopSubj" style="color:var(--orange)">—</div><div class="stat-lbl">🏆 Top Subject</div></div>
+        </div>
+        <!-- All Players Table -->
+        <div class="div" style="margin:12px 0 10px"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text2)">All Players</span>
+          <input id="sbSearch" type="text" placeholder="Search player…" oninput="SBStats.search(this.value)"
+            style="padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--fb);font-size:.76rem;font-weight:700;outline:none;width:140px"/>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl" id="sbUsersTable">
+            <thead><tr><th>#</th><th>Player</th><th>Level</th><th>Games</th><th>Coins</th><th>Joined</th></tr></thead>
+            <tbody id="sbUsersBody"><tr><td colspan="6" style="text-align:center;color:var(--text2);padding:16px">Click Refresh to load</td></tr></tbody>
+          </table>
+        </div>
+        <div id="sbLoadMore" style="display:none;text-align:center;margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="SBStats.loadMore()">Load More</button>
+        </div>
+      </div>
+
       <div class="stat-grid" id="statGrid"></div>
 
       <!-- Weekly chart -->
@@ -748,14 +781,15 @@ const Adm={
   init(){
     this.clock();Analytics.render();PA.load();QA.load();GS.load();
     DailyMgr.load();ContentMgr.load();BanMgr.load();CQBuilder.loadList();Sec.loadLog();
-    // Init Supabase connection status
     SBAdminUI.init();
+    // Auto-load global stats
+    setTimeout(()=>SBStats.load(), 800);
   },
   tab(id){
     document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
     $('t-'+id).classList.add('on');$('p-'+id).classList.add('on');
-    const fn={analytics:()=>Analytics.render(),player:()=>PA.load(),
+    const fn={analytics:()=>{Analytics.render();SBStats.load();},player:()=>PA.load(),
               content:()=>{DailyMgr.load();ContentMgr.load();CQBuilder.loadList();},
               questions:()=>QA.load(),security:()=>Sec.loadLog()};
     fn[id]?.();
@@ -1198,6 +1232,136 @@ const Bk={
     a.href=url;a.download=`quizblast_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);Auth.log('EXPORT');toast('📤 Exported!');
   },
   import(file){if(!file)return;Conf.ask('📥','Import Backup?','Overwrites current data.',()=>{const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.v!=='3.1'){toast('Wrong version!','er');return;}if(d.player)ls.set(K.player,d.player);if(d.leaderboard)ls.set(K.lb,d.leaderboard);if(d.settings)ls.set(K.settings,d.settings);if(d.gameCfg)localStorage.setItem(K.gameCfg,JSON.stringify(d.gameCfg));if(d.customQ)localStorage.setItem(K.customQ,JSON.stringify(d.customQ));if(d.customQuiz)localStorage.setItem(K.customQuiz,JSON.stringify(d.customQuiz));Auth.log('IMPORT');Adm.init();toast('📥 Restored!');}catch{toast('Invalid file!','er');}};rd.readAsText(file);});}
+};
+
+/* ── SUPABASE GLOBAL STATS ── */
+const SBStats = {
+  _allUsers: [],
+  _filtered: [],
+  _page: 0,
+  _pageSize: 20,
+
+  async load() {
+    if(typeof _sb === 'undefined') {
+      document.getElementById('sbStatGrid').innerHTML = '<div style="color:var(--red);font-size:.8rem;font-weight:700;grid-column:1/-1">⚠️ Supabase not configured</div>';
+      return;
+    }
+    // Update stat boxes to loading state
+    ['sbTotalUsers','sbActiveToday','sbActive7d','sbTotalGames','sbNewToday','sbTopSubj'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = '⏳';
+    });
+
+    try {
+      const today = new Date().toISOString().slice(0,10);
+      const week  = new Date(Date.now()-7*86400000).toISOString();
+
+      // Total users
+      const { count: total } = await _sb.from('profiles').select('*',{count:'exact',head:true});
+      document.getElementById('sbTotalUsers').textContent = total || 0;
+
+      // Active today
+      const { count: activeToday } = await _sb.from('profiles')
+        .select('*',{count:'exact',head:true})
+        .gte('updated_at', today);
+      document.getElementById('sbActiveToday').textContent = activeToday || 0;
+
+      // Active last 7 days
+      const { count: active7d } = await _sb.from('profiles')
+        .select('*',{count:'exact',head:true})
+        .gte('updated_at', week);
+      document.getElementById('sbActive7d').textContent = active7d || 0;
+
+      // Total games across all players
+      const { data: gamesData } = await _sb.from('profiles').select('total_games');
+      const totalGames = (gamesData||[]).reduce((s,r)=>s+(r.total_games||0),0);
+      document.getElementById('sbTotalGames').textContent = totalGames.toLocaleString();
+
+      // New players today
+      const { count: newToday } = await _sb.from('profiles')
+        .select('*',{count:'exact',head:true})
+        .gte('created_at', today);
+      document.getElementById('sbNewToday').textContent = newToday || 0;
+
+      // Top subject from leaderboard
+      const { data: subjData } = await _sb.from('leaderboard').select('subject');
+      if(subjData && subjData.length) {
+        const counts = {};
+        subjData.forEach(r => counts[r.subject] = (counts[r.subject]||0)+1);
+        const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+        const icons = {math:'📐',english:'📖',hindi:'🇮🇳',science:'🔬',computer:'💻',evs:'🌿',gk:'🌍',economics:'💰',space:'🚀',animals:'🦒'};
+        document.getElementById('sbTopSubj').textContent = (icons[top[0]]||'📚') + ' ' + top[0];
+      } else {
+        document.getElementById('sbTopSubj').textContent = '—';
+      }
+
+      // Load all players list
+      await this.loadUsers();
+
+    } catch(e) {
+      console.error('SBStats error:', e);
+      document.getElementById('sbTotalUsers').textContent = 'Err';
+    }
+  },
+
+  async loadUsers() {
+    try {
+      const { data } = await _sb.from('profiles')
+        .select('username,avatar,level,total_games,coins,created_at')
+        .order('created_at', {ascending:false})
+        .limit(200);
+      this._allUsers = data || [];
+      this._filtered = [...this._allUsers];
+      this._page = 0;
+      this.renderTable();
+    } catch(e) { console.warn('loadUsers error:', e); }
+  },
+
+  search(q) {
+    const term = q.toLowerCase().trim();
+    this._filtered = term
+      ? this._allUsers.filter(u => u.username?.toLowerCase().includes(term))
+      : [...this._allUsers];
+    this._page = 0;
+    this.renderTable();
+  },
+
+  loadMore() {
+    this._page++;
+    this.renderTable();
+  },
+
+  renderTable() {
+    const tbody = document.getElementById('sbUsersBody');
+    if(!tbody) return;
+    const start = 0;
+    const end   = (this._page+1) * this._pageSize;
+    const rows  = this._filtered.slice(start, end);
+
+    if(!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:16px">No players found</td></tr>';
+      document.getElementById('sbLoadMore').style.display = 'none';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((u,i) => `
+      <tr>
+        <td style="color:var(--text2);font-size:.75rem">${i+1}</td>
+        <td>
+          <span style="font-size:1.2rem">${u.avatar||'👤'}</span>
+          <strong style="margin-left:6px">${esc(u.username||'—')}</strong>
+        </td>
+        <td><span class="bx bx-purple">Lv ${u.level||1}</span></td>
+        <td style="color:var(--gold);font-weight:800">${u.total_games||0}</td>
+        <td style="color:var(--gold)">🪙${u.coins||0}</td>
+        <td style="color:var(--text2);font-size:.7rem">
+          ${u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : '—'}
+        </td>
+      </tr>`).join('');
+
+    const more = document.getElementById('sbLoadMore');
+    if(more) more.style.display = this._filtered.length > end ? 'block' : 'none';
+  }
 };
 
 /* ── SUPABASE ADMIN UI ── */
