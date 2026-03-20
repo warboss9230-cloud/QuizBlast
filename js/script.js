@@ -1025,6 +1025,21 @@ const Game = (() => {
   function startDaily(){
     const p=Player.get();
     if(p.dailyLastDate===today()){alert('✅ Daily challenge already done!\nCome back tomorrow.');return;}
+    // Check Supabase daily challenge first
+    if(typeof SBDaily !== 'undefined' && SBAuth?.isLoggedIn()) {
+      SBDaily.get().then(dc => {
+        const dcls   = dc?.cls     || 6;
+        const dsubj  = dc?.subject || 'gk';
+        QuestionLoader.load(dcls, dsubj).then(bank => {
+          const qs = shuffle(bank).slice(0,10).map(prepQ);
+          _init(qs, {cls:dcls, subject:dsubj, mode:'timer'});
+        }).catch(() => _startDailyFallback());
+      }).catch(() => _startDailyFallback());
+      return;
+    }
+    _startDailyFallback();
+  }
+  function _startDailyFallback(){
     // Check admin daily override
     let dcls=6, dsubj='gk';
     try{
@@ -1041,6 +1056,7 @@ const Game = (() => {
       _init(qs,{cls:dcls,subject:dsubj,mode:'timer'});
     });
   }
+
 
   function loadQuestion(){
     if(qIdx>=questions.length){showResult();return;}
@@ -1140,6 +1156,10 @@ const Game = (() => {
       nbr.innerHTML=newBadges.map((b,i)=>`<div class="new-badge-chip" style="animation-delay:${i*.1}s">${b.icon} ${b.name}</div>`).join('');
     }else if(nbw)nbw.style.display='none';
     const p=Player.get();Leaderboard.add(p.name,p.avatar,score,p.coins);
+    // Submit to global Supabase leaderboard
+    if(typeof SBLeaderboard !== 'undefined' && typeof SBAuth !== 'undefined' && SBAuth.isLoggedIn()){
+      SBLeaderboard.submit(score, accuracy, cfg.subject, cfg.cls, mode).catch(()=>{});
+    }
     if(wrongItems.length){
       $('wrongReview').style.display='block';
       $('wrongList').innerHTML=wrongItems.map(w=>`<div class="wrong-item"><div class="wi-q">❓ ${w.q}</div><div class="wi-yours">✗ ${w.yours}</div><div class="wi-correct">✓ ${w.correct}</div></div>`).join('');
@@ -1922,18 +1942,39 @@ const AdminCfg = (() => {
 })();
 
 /* ── Boot ─────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   AdminCfg.load();
   AdminCfg.mergeQuestions();
   AdminCfg.showAnnouncement();
-  // Check if player is banned
-  try{
-    const p=JSON.parse(localStorage.getItem('_sec_qb_player')||localStorage.getItem('qb_player')||'{}');
-    if(p._banned){
-      document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#0d0f1a;color:#fff;font-family:'Nunito',sans-serif;text-align:center;padding:30px"><div style="font-size:3rem;margin-bottom:16px">🚫</div><div style="font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;margin-bottom:8px">Access Restricted</div><div style="font-size:.9rem;color:#9ba3d0;font-weight:700">${p._banReason||'You have been banned.'}</div><div style="font-size:.75rem;color:#6b7280;margin-top:20px;font-weight:700">Contact the game owner for help.</div></div>`;
+
+  // Check ban
+  try {
+    const p = JSON.parse(localStorage.getItem('_sec_qb_player') || localStorage.getItem('qb_player') || '{}');
+    if (p._banned) {
+      document.body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#1a1625;color:#f0eaff;font-family:'Nunito',sans-serif;text-align:center;padding:30px"><div style="font-size:3rem;margin-bottom:16px">🚫</div><div style="font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;margin-bottom:8px">Access Restricted</div><div style="font-size:.9rem;color:#b8a9d9;font-weight:700">${p._banReason||'You have been banned.'}</div><div style="font-size:.75rem;color:#6b7280;margin-top:20px;font-weight:700">Contact the game owner for help.</div></div>`;
       return;
     }
-  }catch(e){}
+  } catch(e) {}
+
+  // Init Supabase if configured
+  if (typeof SBAuth !== 'undefined' && typeof _sb !== 'undefined') {
+    try {
+      const { user } = await SBAuth.init();
+      if (!user) {
+        // Not logged in — show login screen
+        SBLoginUI.show();
+        return;
+      }
+      // Logged in — pull profile from Supabase
+      await SBPlayer.pull();
+      // Hook Player.save to also push to Supabase
+      const _origSave = Player.save.bind(Player);
+      Player.save = function() { _origSave(); SBPlayer.pushDebounced(); };
+    } catch(e) {
+      console.warn('Supabase init failed, running offline:', e);
+    }
+  }
+
   App.init();
   AdminAccess.init();
   FairPlay.init();
