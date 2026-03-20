@@ -194,6 +194,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
   .adm-content{padding:12px;}
 }
 </style>
+<!-- Supabase SDK for admin global controls -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
 </head>
 <body>
 
@@ -742,7 +745,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('loginWrap').style
 
 /* ── ADMIN CORE ── */
 const Adm={
-  init(){this.clock();Analytics.render();PA.load();QA.load();GS.load();DailyMgr.load();ContentMgr.load();BanMgr.load();CQBuilder.loadList();Sec.loadLog();},
+  init(){
+    this.clock();Analytics.render();PA.load();QA.load();GS.load();
+    DailyMgr.load();ContentMgr.load();BanMgr.load();CQBuilder.loadList();Sec.loadLog();
+    // Init Supabase connection status
+    SBAdminUI.init();
+  },
   tab(id){
     document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
@@ -1190,6 +1198,56 @@ const Bk={
     a.href=url;a.download=`quizblast_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);Auth.log('EXPORT');toast('📤 Exported!');
   },
   import(file){if(!file)return;Conf.ask('📥','Import Backup?','Overwrites current data.',()=>{const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.v!=='3.1'){toast('Wrong version!','er');return;}if(d.player)ls.set(K.player,d.player);if(d.leaderboard)ls.set(K.lb,d.leaderboard);if(d.settings)ls.set(K.settings,d.settings);if(d.gameCfg)localStorage.setItem(K.gameCfg,JSON.stringify(d.gameCfg));if(d.customQ)localStorage.setItem(K.customQ,JSON.stringify(d.customQ));if(d.customQuiz)localStorage.setItem(K.customQuiz,JSON.stringify(d.customQuiz));Auth.log('IMPORT');Adm.init();toast('📥 Restored!');}catch{toast('Invalid file!','er');}};rd.readAsText(file);});}
+};
+
+/* ── SUPABASE ADMIN UI ── */
+const SBAdminUI = {
+  async init() {
+    if(typeof _sb === 'undefined') {
+      this.showStatus('⚠️ Supabase not configured — set URL + KEY in js/supabase.js', 'warn');
+      return;
+    }
+    try {
+      const { data } = await _sb.from('profiles').select('count', {count:'exact',head:true});
+      this.showStatus('✅ Supabase connected! Global features active.', 'ok');
+    } catch(e) {
+      this.showStatus('❌ Supabase connection failed: ' + e.message, 'err');
+    }
+  },
+  showStatus(msg, type) {
+    let el = document.getElementById('sbStatus');
+    if(!el) {
+      el = document.createElement('div');
+      el.id = 'sbStatus';
+      el.style.cssText = 'margin:8px 14px;padding:9px 14px;border-radius:10px;font-size:.78rem;font-weight:800;';
+      const content = document.querySelector('.adm-content');
+      if(content) content.insertBefore(el, content.firstChild);
+    }
+    const colors = {
+      ok:   {bg:'rgba(165,214,167,.12)',border:'rgba(165,214,167,.3)',color:'var(--green)'},
+      warn: {bg:'rgba(255,224,130,.1)', border:'rgba(255,224,130,.3)',color:'var(--gold)'},
+      err:  {bg:'rgba(239,154,154,.1)', border:'rgba(239,154,154,.3)',color:'var(--red)'},
+    };
+    const c = colors[type] || colors.warn;
+    el.style.background   = c.bg;
+    el.style.border       = `1px solid ${c.border}`;
+    el.style.color        = c.color;
+    el.textContent = msg;
+  },
+  async pushDailyChallenge(cls, subject, message) {
+    if(typeof SBDaily === 'undefined') { toast('Supabase not configured!','er'); return; }
+    try {
+      await SBDaily.set(parseInt(cls), subject, message);
+      toast('✅ Daily challenge pushed to all players!');
+    } catch(e) { toast('Error: ' + e.message,'er'); }
+  },
+  async pushCustomQuestion(cls, subject, question, options, answer, hint) {
+    if(typeof SBQuestions === 'undefined') { toast('Supabase not configured!','er'); return; }
+    try {
+      await SBQuestions.add(parseInt(cls), subject, question, options, parseInt(answer), hint);
+      toast('✅ Question added globally!');
+    } catch(e) { toast('Error: ' + e.message,'er'); }
+  }
 };
 
 /* ── CONFIRM ── */
