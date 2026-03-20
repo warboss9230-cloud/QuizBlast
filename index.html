@@ -738,24 +738,6 @@
         <span>Animations</span>
         <label class="toggle-switch"><input type="checkbox" id="settingAnimations" onchange="Settings.applyAnimations(this.checked)"/><span class="toggle-track"></span></label>
       </div>
-      <div class="setting-row">
-        <span>Timer Duration</span>
-        <div class="seg-ctrl wide">
-          <button id="ts-5"  onclick="Settings.setTimer(5)">5s</button>
-          <button id="ts-10" onclick="Settings.setTimer(10)" class="active">10s</button>
-          <button id="ts-15" onclick="Settings.setTimer(15)">15s</button>
-          <button id="ts-30" onclick="Settings.setTimer(30)">30s</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span>🎁 Reward Every <span id="rewardEveryVal">5</span> Correct</span>
-        <div class="seg-ctrl wide">
-          <button id="re-5"  onclick="Settings.setRewardEvery(5)"  class="active">5</button>
-          <button id="re-10" onclick="Settings.setRewardEvery(10)">10</button>
-          <button id="re-15" onclick="Settings.setRewardEvery(15)">15</button>
-          <button id="re-20" onclick="Settings.setRewardEvery(20)">20</button>
-        </div>
-      </div>
     </div>
     <!-- Edit Profile -->
     <div class="settings-section">
@@ -779,6 +761,16 @@
       <button class="btn btn-danger btn-full" onclick="Settings.resetProgress()">🗑️ Reset All Progress</button>
     </div>
     <div class="settings-version">QuizBlast v3.1 · Made with ❤️</div>
+    <!-- Hidden: owner-only settings kept in sync by JS -->
+    <span id="rewardEveryVal" style="display:none">5</span>
+    <span id="ts-5"  style="display:none"></span>
+    <span id="ts-10" style="display:none"></span>
+    <span id="ts-15" style="display:none"></span>
+    <span id="ts-30" style="display:none"></span>
+    <span id="re-5"  style="display:none"></span>
+    <span id="re-10" style="display:none"></span>
+    <span id="re-15" style="display:none"></span>
+    <span id="re-20" style="display:none"></span>
   </div>
 </div>
 
