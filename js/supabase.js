@@ -41,8 +41,10 @@ const SBAuth = (() => {
   }
 
   async function signUp(username, password) {
-    // Use username as email prefix for Supabase auth
-    const email = `${username.toLowerCase().replace(/\s+/g,'_')}@quizblast.app`;
+    // Create internal email — user never sees this
+    const clean = username.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const hash  = Math.abs(username.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)&0xffff);
+    const email = `${clean}${hash}@qblast.game`;
     const { data, error } = await _sb.auth.signUp({
       email,
       password,
@@ -53,7 +55,9 @@ const SBAuth = (() => {
   }
 
   async function signIn(username, password) {
-    const email = `${username.toLowerCase().replace(/\s+/g,'_')}@quizblast.app`;
+    const clean = username.toLowerCase().replace(/[^a-z0-9]/g,'');
+    const hash  = Math.abs(username.split('').reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)&0xffff);
+    const email = `${clean}${hash}@qblast.game`;
     const { data, error } = await _sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
     _user = data.user;
@@ -64,6 +68,51 @@ const SBAuth = (() => {
   async function signOut() {
     await _sb.auth.signOut();
     _user = null; _profile = null;
+  }
+
+  // Auto-login using device fingerprint — no UI shown
+  async function autoLogin() {
+    try {
+      // Generate unique device ID stored in localStorage
+      let deviceId = localStorage.getItem('qb_device_id');
+      if (!deviceId) {
+        deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).slice(2,9);
+        localStorage.setItem('qb_device_id', deviceId);
+      }
+      const email    = `${deviceId}@qblast.game`;
+      const password = 'QB_' + deviceId.split('').reverse().join('').slice(0,16);
+
+      // Try sign in first
+      try {
+        const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+        if (!error && data.user) {
+          _user = data.user;
+          await _loadProfile();
+          return;
+        }
+      } catch(e) {}
+
+      // If sign in fails — create account silently
+      const localName = (() => {
+        try {
+          const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
+          return p.name && p.name !== 'Player' ? p.name : 'Player' + Math.floor(Math.random()*9000+1000);
+        } catch { return 'Player' + Math.floor(Math.random()*9000+1000); }
+      })();
+
+      const { data: signUpData } = await _sb.auth.signUp({
+        email, password,
+        options: { data: { username: localName } }
+      });
+      if (signUpData?.user) {
+        _user = signUpData.user;
+        // Small delay for trigger to create profile
+        await new Promise(r => setTimeout(r, 800));
+        await _loadProfile();
+      }
+    } catch(e) {
+      console.warn('Auto-login failed, offline mode:', e);
+    }
   }
 
   async function _loadProfile() {
@@ -94,7 +143,7 @@ const SBAuth = (() => {
   function isLoggedIn() { return !!_user; }
   function onChange(fn) { _listeners.push(fn); }
 
-  return { init, signUp, signIn, signOut, updateProfile, getUser, getProfile, isLoggedIn, onChange };
+  return { init, signUp, signIn, signOut, autoLogin, updateProfile, getUser, getProfile, isLoggedIn, onChange };
 })();
 
 /* ════════════════════════════════════════════════════════════
@@ -317,15 +366,23 @@ const SBLoginUI = (() => {
                 padding:8px 12px;color:#ef9a9a;font-size:.78rem;font-weight:800;
                 margin-bottom:12px"></div>
 
+          <p style="color:#b8a9d9;font-size:.72rem;font-weight:700;
+                   margin-bottom:8px;text-align:left">
+            👤 Username (no email, no spaces)</p>
           <input id="sbUsername" type="text" maxlength="20"
-            placeholder="Username"
+            placeholder="e.g. Harendra123"
+            autocomplete="username" autocorrect="off" autocapitalize="off"
             style="width:100%;padding:12px 16px;background:#2a2440;
                    border:2px solid rgba(200,180,255,.15);border-radius:12px;
                    color:#f0eaff;font-family:'Nunito',sans-serif;font-size:.9rem;
                    font-weight:700;outline:none;margin-bottom:10px;
                    box-sizing:border-box"/>
+          <p style="color:#b8a9d9;font-size:.72rem;font-weight:700;
+                   margin-bottom:8px;text-align:left">
+            🔒 Password (min 6 characters)</p>
           <input id="sbPassword" type="password" maxlength="40"
             placeholder="Password"
+            autocomplete="current-password"
             style="width:100%;padding:12px 16px;background:#2a2440;
                    border:2px solid rgba(200,180,255,.15);border-radius:12px;
                    color:#f0eaff;font-family:'Nunito',sans-serif;font-size:.9rem;
@@ -402,8 +459,10 @@ const SBLoginUI = (() => {
   async function login() {
     const username = document.getElementById('sbUsername')?.value.trim();
     const password = document.getElementById('sbPassword')?.value;
-    if (!username || username.length < 3) { _setError('Username min 3 characters!'); return; }
-    if (!password || password.length < 6) { _setError('Password min 6 characters!'); return; }
+    if (!username || username.length < 3) { _setError('⚠️ Username min 3 characters!'); return; }
+    if (username.includes('@')) { _setError('⚠️ Username mein @ mat daalo — sirf naam likhao (e.g. Harendra123)'); return; }
+    if (username.includes(' ')) { _setError('⚠️ Username mein space nahi — e.g. Harendra123'); return; }
+    if (!password || password.length < 6) { _setError('⚠️ Password min 6 characters!'); return; }
     _setError(''); _setLoading(true);
     try {
       if (_isSignup) {
