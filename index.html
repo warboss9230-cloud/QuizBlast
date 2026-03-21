@@ -911,9 +911,9 @@
         <div class="settings-avatar-preview" id="settingsAvatarPreview">🐉</div>
         <input id="settingsNameInput" type="text" class="name-input settings-name-input" placeholder="Your name…" maxlength="20"/>
       </div>
-      <p class="avatar-hint" style="margin:8px 0">🔒 Locked avatars cost <strong>3,000 🪙</strong></p>
+      <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="Profile.saveFromSettings()">💾 Save Profile</button>
+      <p class="avatar-hint" style="margin:8px 0">🔒 Normal: <strong>3,000 🪙</strong> &nbsp;|&nbsp; 💎 Premium: <strong>8,000 🪙</strong></p>
       <div class="avatar-grid settings-avatar-grid" id="settingsAvatarGrid"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="Profile.saveFromSettings()">💾 Save Profile</button>
     </div>
     <!-- Stats -->
     <div class="settings-section">
