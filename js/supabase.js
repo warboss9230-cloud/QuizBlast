@@ -16,6 +16,103 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ════════════════════════════════════════════════════════════
+   NAME PROMPT — Pehli baar naam poochta hai
+════════════════════════════════════════════════════════════ */
+const NamePrompt = {
+  _resolve: null,
+
+  ask() {
+    return new Promise((resolve) => {
+      this._resolve = resolve;
+
+      // Agar overlay already hai toh remove karo
+      const existing = document.getElementById('namePromptOverlay');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'namePromptOverlay';
+      overlay.style.cssText = `
+        position:fixed;inset:0;z-index:99999;
+        background:linear-gradient(135deg,#1a1625,#2a2440);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Nunito',sans-serif;padding:20px;`;
+
+      overlay.innerHTML = `
+        <div style="background:#251f38;border:1px solid rgba(200,180,255,.15);
+                    border-radius:20px;padding:36px 28px;max-width:360px;
+                    width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)">
+          <div style="font-size:3rem;margin-bottom:12px">🎮</div>
+          <h2 style="font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;
+                     background:linear-gradient(135deg,#f0eaff,#ce93d8);
+                     -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                     background-clip:text;margin-bottom:6px">QuizBlast</h2>
+          <p style="color:#b8a9d9;font-size:.82rem;font-weight:700;margin-bottom:24px">
+            Leaderboard ke liye apna naam daalo!</p>
+
+          <input id="namePromptInput" type="text" maxlength="20"
+            placeholder="Apna naam likho… (e.g. Harendra)"
+            autocomplete="off" autocorrect="off" autocapitalize="words"
+            style="width:100%;padding:13px 16px;background:#2a2440;
+                   border:2px solid rgba(200,180,255,.25);border-radius:12px;
+                   color:#f0eaff;font-family:'Nunito',sans-serif;font-size:1rem;
+                   font-weight:700;outline:none;margin-bottom:8px;
+                   box-sizing:border-box;text-align:center"/>
+
+          <div id="namePromptErr" style="min-height:18px;font-size:.75rem;
+               font-weight:800;color:#ef9a9a;margin-bottom:10px"></div>
+
+          <button id="namePromptBtn"
+            onclick="NamePrompt.submit()"
+            style="width:100%;padding:13px;border:none;border-radius:50px;
+                   background:linear-gradient(135deg,#b39ddb,#ce93d8);
+                   color:#2d2040;font-family:'Nunito',sans-serif;font-size:.95rem;
+                   font-weight:900;cursor:pointer;
+                   box-shadow:0 4px 16px rgba(179,157,219,.3)">
+            ✅ Save & Play!
+          </button>
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      // Enter key support
+      setTimeout(() => {
+        const inp = document.getElementById('namePromptInput');
+        if (inp) {
+          inp.focus();
+          inp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') NamePrompt.submit();
+          });
+        }
+      }, 100);
+    });
+  },
+
+  submit() {
+    const inp = document.getElementById('namePromptInput');
+    const err = document.getElementById('namePromptErr');
+    const name = inp ? inp.value.trim() : '';
+
+    if (!name || name.length < 2) {
+      if (err) err.textContent = '⚠️ Kam se kam 2 characters chahiye!';
+      return;
+    }
+    if (name.length > 20) {
+      if (err) err.textContent = '⚠️ Maximum 20 characters!';
+      return;
+    }
+
+    // Remove overlay
+    const overlay = document.getElementById('namePromptOverlay');
+    if (overlay) overlay.remove();
+
+    if (this._resolve) {
+      this._resolve(name);
+      this._resolve = null;
+    }
+  }
+};
+
+/* ════════════════════════════════════════════════════════════
    AUTH MODULE
 ════════════════════════════════════════════════════════════ */
 const SBAuth = (() => {
@@ -77,10 +174,10 @@ const SBAuth = (() => {
     _user = null; _profile = null;
   }
 
-  // Auto-login using device fingerprint — no UI shown
+  // Auto-login using device fingerprint
+  // If name not set or is generic "Player####", ask user for their name
   async function autoLogin() {
     try {
-      // Generate unique device ID stored in localStorage
       let deviceId = localStorage.getItem('qb_device_id');
       if (!deviceId) {
         deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).slice(2,9);
@@ -89,21 +186,55 @@ const SBAuth = (() => {
       const email    = `${deviceId}@qblast.game`;
       const password = 'QB_' + deviceId.split('').reverse().join('').slice(0,16);
 
+      // Get local player name
+      const getLocalName = () => {
+        try {
+          const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
+          return (p.name && p.name !== 'Player' && !/^Player\d+$/.test(p.name)) ? p.name : null;
+        } catch { return null; }
+      };
+
+      const getLocalAvatar = () => {
+        try {
+          const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
+          return p.avatar || '🐉';
+        } catch { return '🐉'; }
+      };
+
       // Try sign in first
       try {
         const { data, error } = await _sb.auth.signInWithPassword({ email, password });
         if (!error && data.user) {
           _user = data.user;
           await _loadProfile();
-          // Update username from localStorage if it changed
-          const localPlayer = (() => {
-            try { return JSON.parse(localStorage.getItem('qb_player') || '{}'); } catch { return {}; }
-          })();
-          const localName = localPlayer.name && localPlayer.name !== 'Player' ? localPlayer.name : null;
-          if (localName && _profile && _profile.username !== localName) {
+
+          // If profile username is generic (Player####) or missing, ask for real name
+          const isGeneric = !_profile?.username || /^Player\d+$/.test(_profile.username) || _profile.username === 'Player';
+          const localName = getLocalName();
+
+          if (isGeneric && !localName) {
+            // Ask user for their name
+            const name = await NamePrompt.ask();
+            if (name) {
+              // Save locally
+              try {
+                const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
+                p.name = name;
+                localStorage.setItem('qb_player', JSON.stringify(p));
+              } catch(e) {}
+              // Save to Supabase
+              await _sb.from('profiles').update({
+                username: name,
+                avatar: getLocalAvatar(),
+                updated_at: new Date().toISOString()
+              }).eq('id', _user.id);
+              await _loadProfile();
+            }
+          } else if (localName && (_profile?.username !== localName)) {
+            // Sync local name to Supabase
             await _sb.from('profiles').update({
               username: localName,
-              avatar: localPlayer.avatar || '🐉',
+              avatar: getLocalAvatar(),
               updated_at: new Date().toISOString()
             }).eq('id', _user.id);
             await _loadProfile();
@@ -112,21 +243,27 @@ const SBAuth = (() => {
         }
       } catch(e) {}
 
-      // If sign in fails — create account silently
-      const localName = (() => {
-        try {
-          const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
-          return p.name && p.name !== 'Player' ? p.name : 'Player' + Math.floor(Math.random()*9000+1000);
-        } catch { return 'Player' + Math.floor(Math.random()*9000+1000); }
-      })();
+      // New device — ask for name first
+      let userName = getLocalName();
+      if (!userName) {
+        userName = await NamePrompt.ask();
+        if (userName) {
+          try {
+            const p = JSON.parse(localStorage.getItem('qb_player') || '{}');
+            p.name = userName;
+            localStorage.setItem('qb_player', JSON.stringify(p));
+          } catch(e) {}
+        } else {
+          userName = 'Player' + Math.floor(Math.random()*9000+1000);
+        }
+      }
 
       const { data: signUpData } = await _sb.auth.signUp({
         email, password,
-        options: { data: { username: localName } }
+        options: { data: { username: userName } }
       });
       if (signUpData?.user) {
         _user = signUpData.user;
-        // Small delay for trigger to create profile
         await new Promise(r => setTimeout(r, 800));
         await _loadProfile();
       }
