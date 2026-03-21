@@ -235,6 +235,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
     <button class="adm-tab" id="t-questions" onclick="Adm.tab('questions')"><span class="tab-ic">❓</span>Questions</button>
     <button class="adm-tab" id="t-settings"  onclick="Adm.tab('settings')" ><span class="tab-ic">⚙️</span>Settings</button>
     <button class="adm-tab" id="t-security"  onclick="Adm.tab('security')" ><span class="tab-ic">🔐</span>Security</button>
+    <button class="adm-tab" id="t-players"   onclick="Adm.tab('players')"  ><span class="tab-ic">👥</span>Players</button>
   </div>
 
   <div class="adm-body"><div class="adm-content">
@@ -673,6 +674,47 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
       </div>
     </div>
 
+
+    <!-- ══ PLAYERS ══ -->
+    <div class="panel" id="p-players">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left"><span>👥</span> All Players</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="plSearch" type="text" placeholder="🔍 Search name…"
+              oninput="PlayersTab.search(this.value)"
+              style="padding:6px 12px;background:var(--bg3);border:1px solid var(--border);
+                     border-radius:8px;color:var(--text);font-family:var(--fb);
+                     font-size:.78rem;font-weight:700;outline:none;width:150px"/>
+            <button class="btn btn-ghost btn-xs" onclick="PlayersTab.load()">🔄 Refresh</button>
+            <button class="btn btn-ghost btn-xs" onclick="PlayersTab.exportCSV()">📥 Export CSV</button>
+          </div>
+        </div>
+        <div class="stat-grid" style="margin-bottom:14px">
+          <div class="stat-box"><div class="stat-val" id="pt-total" style="color:var(--cyan)">—</div><div class="stat-lbl">👥 Total Players</div></div>
+          <div class="stat-box"><div class="stat-val" id="pt-today" style="color:var(--green)">—</div><div class="stat-lbl">✅ Active Today</div></div>
+          <div class="stat-box"><div class="stat-val" id="pt-week"  style="color:var(--purple)">—</div><div class="stat-lbl">📅 This Week</div></div>
+          <div class="stat-box"><div class="stat-val" id="pt-games" style="color:var(--gold)">—</div><div class="stat-lbl">🎮 Total Games</div></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl" id="ptTable">
+            <thead>
+              <tr>
+                <th>#</th><th>Player</th><th>Level</th><th>XP</th>
+                <th>Games</th><th>Coins</th><th>Streak</th><th>Joined</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ptBody">
+              <tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px">Click 🔄 Refresh to load players</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="ptLoadMore" style="display:none;text-align:center;margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="PlayersTab.loadMore()">Load More Players</button>
+        </div>
+      </div>
+    </div>
+
   </div></div>
 </div>
 
@@ -789,7 +831,7 @@ const Adm={
     document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
     $('t-'+id).classList.add('on');$('p-'+id).classList.add('on');
-    const fn={analytics:()=>{Analytics.render();SBStats.load();},player:()=>PA.load(),
+    const fn={analytics:()=>{Analytics.render();SBStats.load();},players:()=>PlayersTab.load(),player:()=>PA.load(),
               content:()=>{DailyMgr.load();ContentMgr.load();CQBuilder.loadList();},
               questions:()=>QA.load(),security:()=>Sec.loadLog()};
     fn[id]?.();
@@ -1420,6 +1462,168 @@ const SBAdminUI = {
 /* ── CONFIRM ── */
 const Conf={_cb:null,ask(ic,t,m,cb){$('ci').textContent=ic;$('ct').textContent=t;$('cm').textContent=m;this._cb=cb;$('confirmWrap').classList.add('on');},no(){$('confirmWrap').classList.remove('on');this._cb=null;}};
 $('cYes').onclick=()=>{if(Conf._cb)Conf._cb();Conf.no();};
+
+/* ══ PLAYERS TAB ══ */
+const PlayersTab = {
+  _all: [],
+  _filtered: [],
+  _page: 0,
+  _pageSize: 25,
+
+  async load() {
+    if (typeof _sb === 'undefined') {
+      document.getElementById('ptBody').innerHTML =
+        '<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px">⚠️ Supabase not configured</td></tr>';
+      return;
+    }
+    // Show loading
+    document.getElementById('ptBody').innerHTML =
+      '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px">⏳ Loading players…</td></tr>';
+    ['pt-total','pt-today','pt-week','pt-games'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '⏳';
+    });
+
+    try {
+      const today = new Date().toISOString().slice(0,10);
+      const week  = new Date(Date.now() - 7*86400000).toISOString();
+
+      // Total players
+      const { count: total } = await _sb.from('profiles').select('*', {count:'exact', head:true});
+      document.getElementById('pt-total').textContent = total || 0;
+
+      // Active today
+      const { count: activeToday } = await _sb.from('profiles')
+        .select('*', {count:'exact', head:true}).gte('updated_at', today);
+      document.getElementById('pt-today').textContent = activeToday || 0;
+
+      // Active this week
+      const { count: activeWeek } = await _sb.from('profiles')
+        .select('*', {count:'exact', head:true}).gte('updated_at', week);
+      document.getElementById('pt-week').textContent = activeWeek || 0;
+
+      // Total games
+      const { data: gd } = await _sb.from('profiles').select('total_games');
+      const totalGames = (gd||[]).reduce((s,r) => s + (r.total_games||0), 0);
+      document.getElementById('pt-games').textContent = totalGames.toLocaleString();
+
+      // Load all players
+      const { data, error } = await _sb.from('profiles')
+        .select('username,avatar,level,xp,total_games,coins,day_streak,updated_at,created_at')
+        .order('level', {ascending: false})
+        .limit(500);
+
+      if (error) throw error;
+      this._all = data || [];
+      this._filtered = [...this._all];
+      this._page = 0;
+      this.renderTable();
+
+    } catch(e) {
+      console.error('PlayersTab error:', e);
+      document.getElementById('ptBody').innerHTML =
+        '<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px">⚠️ Error: ' + esc(e.message) + '</td></tr>';
+    }
+  },
+
+  search(q) {
+    const term = q.toLowerCase().trim();
+    this._filtered = term
+      ? this._all.filter(u => (u.username||'').toLowerCase().includes(term))
+      : [...this._all];
+    this._page = 0;
+    this.renderTable();
+  },
+
+  loadMore() {
+    this._page++;
+    this.renderTable();
+  },
+
+  renderTable() {
+    const tbody = document.getElementById('ptBody');
+    if (!tbody) return;
+    const end  = (this._page + 1) * this._pageSize;
+    const rows = this._filtered.slice(0, end);
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px">No players found</td></tr>';
+      document.getElementById('ptLoadMore').style.display = 'none';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((u, i) => {
+      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : '—';
+      const lastSeen = u.updated_at ? new Date(u.updated_at).toLocaleDateString('en-IN') : '—';
+      const levelColor = u.level >= 20 ? 'var(--gold)' : u.level >= 10 ? 'var(--purple)' : 'var(--cyan)';
+      return `
+        <tr>
+          <td style="color:var(--text2);font-size:.75rem;font-weight:800">${i+1}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:1.3rem">${u.avatar||'👤'}</span>
+              <div>
+                <div style="font-weight:800;font-size:.88rem">${esc(u.username||'Unknown')}</div>
+                <div style="font-size:.68rem;color:var(--text2)">Last: ${lastSeen}</div>
+              </div>
+            </div>
+          </td>
+          <td><span style="background:rgba(179,157,219,.18);color:${levelColor};border-radius:20px;padding:2px 9px;font-size:.75rem;font-weight:800">Lv ${u.level||1}</span></td>
+          <td style="color:var(--purple);font-weight:800;font-size:.85rem">${(u.xp||0).toLocaleString()}</td>
+          <td style="color:var(--cyan);font-weight:800">${u.total_games||0}</td>
+          <td style="color:var(--gold);font-weight:800">🪙 ${(u.coins||0).toLocaleString()}</td>
+          <td style="color:var(--accent2);font-weight:800">${u.day_streak||0} 🔥</td>
+          <td style="color:var(--text2);font-size:.72rem">${joined}</td>
+          <td>
+            <button class="btn btn-ghost btn-xs" onclick="PlayersTab.viewPlayer(${i})" title="View Details">👁</button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    const more = document.getElementById('ptLoadMore');
+    if (more) more.style.display = this._filtered.length > end ? 'block' : 'none';
+  },
+
+  viewPlayer(idx) {
+    const u = this._filtered[idx];
+    if (!u) return;
+    const joined = u.created_at ? new Date(u.created_at).toLocaleString('en-IN') : '—';
+    const lastSeen = u.updated_at ? new Date(u.updated_at).toLocaleString('en-IN') : '—';
+    alert(
+      `👤 Player Details\n\n` +
+      `Name: ${u.username||'Unknown'}\n` +
+      `Level: ${u.level||1}\n` +
+      `XP: ${(u.xp||0).toLocaleString()}\n` +
+      `Coins: 🪙 ${(u.coins||0).toLocaleString()}\n` +
+      `Games Played: ${u.total_games||0}\n` +
+      `Day Streak: ${u.day_streak||0} 🔥\n` +
+      `Joined: ${joined}\n` +
+      `Last Active: ${lastSeen}`
+    );
+  },
+
+  exportCSV() {
+    if (!this._all.length) { toast('No data to export. Click Refresh first.','warn'); return; }
+    const headers = ['#','Username','Level','XP','Games','Coins','DayStreak','Joined'];
+    const rows = this._all.map((u, i) => [
+      i+1,
+      u.username||'',
+      u.level||1,
+      u.xp||0,
+      u.total_games||0,
+      u.coins||0,
+      u.day_streak||0,
+      u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'quizblast_players_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    toast('✅ CSV exported!');
+  }
+};
+
 </script>
 </body>
 </html>
