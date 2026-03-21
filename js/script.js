@@ -423,7 +423,7 @@ const Settings = (() => {
     $('settingsOverlay').style.display='flex';
     document.body.classList.add('overlay-open');
   }
-  function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');}
+  function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');$('avatarUnlockOverlay').style.display='none';AvatarUnlock.cancel();}
   function applyTheme(v){cfg.theme=v?'dark':'light';document.documentElement.setAttribute('data-theme',cfg.theme);persist();}
   function applySound(v){cfg.sound=v;Sound.setMuted(!v);persist();}
   function applyAnimations(v){cfg.animations=v;if(!v)document.documentElement.setAttribute('data-no-anim','');else document.documentElement.removeAttribute('data-no-anim');persist();}
@@ -578,15 +578,28 @@ const AvatarUnlock = (() => {
     const p=Player.get();
     $('unlockAvatarBig').textContent=emoji;
     $('unlockBalance').textContent=p.coins;
-    $('avatarUnlockOverlay').style.display='flex';
+    // Move overlay to top of body so it appears above settings panel
+    const ov=$('avatarUnlockOverlay');
+    document.body.appendChild(ov);
+    ov.style.display='flex';
+    ov.style.zIndex='999999';
   }
   function confirm(){
     const p=Player.get();
-    if(p.coins<AVATAR_UNLOCK_COST){alert(`Need 5,000 🪙, have ${p.coins}`);$('avatarUnlockOverlay').style.display='none';return;}
-    Player.addCoins(-AVATAR_UNLOCK_COST);Player.unlockAvatar(pidx);
-    Sound.play('unlock');$('avatarUnlockOverlay').style.display='none';
-    Profile.selectByIndex(pidx,pgrid);Profile.rebuildGrid(pgrid);
-    Badges.check();pidx=null;
+    if(p.coins<AVATAR_UNLOCK_COST){
+      $('avatarUnlockOverlay').style.display='none';
+      return;
+    }
+    Player.addCoins(-AVATAR_UNLOCK_COST);
+    Player.unlockAvatar(pidx);
+    Sound.play('unlock');
+    $('avatarUnlockOverlay').style.display='none';
+    Profile.selectByIndex(pidx,pgrid);
+    // Rebuild both grids
+    Profile.rebuildGrid('avatarGrid');
+    Profile.rebuildGrid('settingsAvatarGrid');
+    Badges.check();
+    pidx=null;
   }
   function cancel(){pidx=null;$('avatarUnlockOverlay').style.display='none';}
   return{promptFromGrid,confirm,cancel};
