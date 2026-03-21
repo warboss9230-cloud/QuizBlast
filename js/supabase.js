@@ -95,6 +95,19 @@ const SBAuth = (() => {
         if (!error && data.user) {
           _user = data.user;
           await _loadProfile();
+          // Update username from localStorage if it changed
+          const localPlayer = (() => {
+            try { return JSON.parse(localStorage.getItem('qb_player') || '{}'); } catch { return {}; }
+          })();
+          const localName = localPlayer.name && localPlayer.name !== 'Player' ? localPlayer.name : null;
+          if (localName && _profile && _profile.username !== localName) {
+            await _sb.from('profiles').update({
+              username: localName,
+              avatar: localPlayer.avatar || '🐉',
+              updated_at: new Date().toISOString()
+            }).eq('id', _user.id);
+            await _loadProfile();
+          }
           return;
         }
       } catch(e) {}
