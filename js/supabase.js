@@ -48,9 +48,16 @@ const SBAuth = (() => {
     const { data, error } = await _sb.auth.signUp({
       email,
       password,
-      options: { data: { username } }
+      options: {
+        data: { username },
+        emailRedirectTo: undefined,
+      }
     });
     if (error) throw error;
+    // If user already exists, signUp returns user but with identities: []
+    if (data?.user && data.user.identities && data.user.identities.length === 0) {
+      throw new Error('Username already registered');
+    }
     return data;
   }
 
@@ -115,6 +122,11 @@ const SBAuth = (() => {
     }
   }
 
+  // Expose _loadProfile so SBPlayer.pull can refresh before reading
+  async function loadProfile() {
+    return await _loadProfile();
+  }
+
   async function _loadProfile() {
     if (!_user) return null;
     const { data, error } = await _sb
@@ -143,7 +155,7 @@ const SBAuth = (() => {
   function isLoggedIn() { return !!_user; }
   function onChange(fn) { _listeners.push(fn); }
 
-  return { init, signUp, signIn, signOut, autoLogin, updateProfile, getUser, getProfile, isLoggedIn, onChange };
+  return { init, signUp, signIn, signOut, autoLogin, updateProfile, getUser, getProfile, isLoggedIn, onChange, loadProfile };
 })();
 
 /* ════════════════════════════════════════════════════════════
@@ -182,12 +194,14 @@ const SBPlayer = (() => {
   // Pull Supabase profile → local Player
   async function pull() {
     if (!SBAuth.isLoggedIn()) return;
+    // Reload profile from DB to get latest data
+    await SBAuth.loadProfile();
     const profile = SBAuth.getProfile();
     if (!profile) return;
     const patch = {
-      name:            profile.username,
+      name:            profile.username || 'Player',
       avatar:          profile.avatar || '🐉',
-      coins:           profile.coins || 100,
+      coins:           profile.coins !== undefined ? profile.coins : 100,
       xp:              profile.xp || 0,
       level:           profile.level || 1,
       totalGames:      profile.total_games || 0,
@@ -228,16 +242,22 @@ const SBLeaderboard = (() => {
   async function submit(score, accuracy, subject, cls, mode) {
     if (!SBAuth.isLoggedIn()) return;
     const profile = SBAuth.getProfile();
-    await _sb.from('leaderboard').insert({
-      user_id:  SBAuth.getUser().id,
-      username: profile.username,
-      avatar:   profile.avatar || '🐉',
-      score, accuracy,
-      subject:  subject || 'gk',
-      class:    cls || 6,
-      mode:     mode || 'freeplay',
-      coins:    profile.coins || 0,
-    });
+    if (!profile) return;
+    try {
+      const { error } = await _sb.from('leaderboard').insert({
+        user_id:  SBAuth.getUser().id,
+        username: profile.username || 'Player',
+        avatar:   profile.avatar || '🐉',
+        score, accuracy,
+        subject:  subject || 'gk',
+        class:    cls || 6,
+        mode:     mode || 'freeplay',
+        coins:    profile.coins || 0,
+      });
+      if (error) console.warn('Leaderboard submit error:', error.message);
+    } catch(e) {
+      console.warn('Leaderboard submit failed:', e);
+    }
   }
 
   async function getTop(limit = 20, subject = null) {
@@ -480,7 +500,7 @@ const SBLoginUI = (() => {
     } catch(e) {
       _setLoading(false);
       const msg = e.message || '';
-      if (msg.includes('already registered') || msg.includes('already exists')) {
+      if (msg.includes('already registered') || msg.includes('already exists') || msg.includes('Username already registered')) {
         _setError('Username taken! Try another.');
       } else if (msg.includes('Invalid login') || msg.includes('credentials')) {
         _setError('Wrong username or password!');
