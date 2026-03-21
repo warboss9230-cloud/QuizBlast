@@ -633,7 +633,7 @@ const App = (() => {
     document.body.classList.toggle('home-visible', homeScreens.includes(id));
     if(id==='screen-select')      SelectScreen.refresh();
     if(id==='screen-picker')      SelectScreen.refreshPicker();
-    if(id==='screen-leaderboard') Leaderboard.render();
+    if(id==='screen-leaderboard') { if(typeof SBLeaderboardUI !== 'undefined') SBLeaderboardUI.render(); else Leaderboard.render(); }
     if(id==='screen-progress')    ProgressScreen.render();
     if(id==='screen-pvp-hub')     PvPOffline.refreshHub();
     if(id==='screen-splash')      Splash.refresh();
@@ -1964,11 +1964,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Auto-login with device ID — no login screen shown
         await SBAuth.autoLogin();
       }
-      // Pull profile from Supabase
-      await SBPlayer.pull();
+      // Pull profile from Supabase (with individual try-catch so it never breaks the app)
+      try {
+        await SBPlayer.pull();
+      } catch(e) {
+        console.warn('SBPlayer.pull failed, using local data:', e);
+      }
       // Hook Player.save to also push to Supabase
       const _origSave = Player.save.bind(Player);
-      Player.save = function() { _origSave(); SBPlayer.pushDebounced(); };
+      Player.save = function() {
+        _origSave();
+        SBPlayer.pushDebounced();
+      };
     } catch(e) {
       console.warn('Supabase init failed, running offline:', e);
     }
