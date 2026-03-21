@@ -8,34 +8,33 @@
 const AVATARS = [
   // 🟢 FREE (0-4)
   '🐉','🦁','🐯','🦊','🐺',
-  // 🔒 LOCKED — Animals (5-19)
+  // 🔒 NORMAL (5-54) — 5,000 🪙
   '🦅','🦋','🐬','🦄','🐻',
   '🐼','🦜','🦈','🦖','🦩',
   '🐸','🐙','🦝','🐨','🦬',
-  // 🔒 LOCKED — More Animals (20-34)
-  '🦁','🐆','🦓','🦏','🦛',
-  '🐘','🦒','🦘','🦔','🐺',
+  '🐆','🦓','🦏','🦛','🐅',
+  '🐘','🦒','🦘','🦔','🦫',
   '🦀','🦞','🦑','🐡','🦭',
-  // 🔒 LOCKED — Fantasy & Heroes (35-49)
   '🤖','👽','🧙','🦸','🥷',
   '🧛','🎃','🤠','🧜','🧝',
   '🧞','🧟','👾','🤺','🦹',
-  // 🔒 LOCKED — Space & Nature (50-64)
+  '🍕','🎮','🎯','🎲','🃏',
+  // 💎 PREMIUM (55-104) — 15,000 🪙
   '🚀','🌙','⭐','🪐','☄️',
   '🌊','🌋','🏔️','🌈','🌪️',
   '🔥','❄️','⚡','🌸','🍄',
-  // 🔒 LOCKED — Food & Fun (65-79)
-  '🍕','🎮','🎯','🏆','👑',
-  '💎','🎭','🎪','🃏','🎲',
+  '🏆','👑','💎','🎭','🎪',
   '🎸','🎹','🎺','🥁','🎻',
-  // 🔒 LOCKED — Symbols & Misc (80-99)
   '🌍','🌏','🌎','🗺️','🧭',
   '⚔️','🛡️','🏹','🪄','🔮',
   '💀','☠️','🦴','👁️','🕷️',
-  '🐲','🦕','🦖','🐊','🦋',
+  '🐲','🦕','🐊','🦂','🪲',
+  '🧿','🌀','🔱','⚜️','🏅',
 ];
 const FREE_AVATAR_COUNT  = 5;
-const AVATAR_UNLOCK_COST = 5000;
+const AVATAR_UNLOCK_COST = 3000;
+const PREMIUM_AVATAR_START = 55;  // Index 55+ are premium
+const PREMIUM_AVATAR_COST = 8000; // Premium costs 8,000 coins
 const COIN_CORRECT=10, COIN_WRONG=-5, XP_CORRECT=10, XP_LEVEL_UP=100;
 const STREAK_BONUS_3=5, STREAK_BONUS_5=10, REWARD_EVERY=5;
 const POWERUP_COSTS = { hint:20,'5050':30,skip:40,freeze:50 };
@@ -573,11 +572,17 @@ const Badges = (() => {
 ════════════════════════════════════════════════════ */
 const AvatarUnlock = (() => {
   let pidx=null,pgrid='avatarGrid';
-  function promptFromGrid(i,emoji,gridId){
+  let _cost=AVATAR_UNLOCK_COST;
+  function promptFromGrid(i,emoji,gridId,cost){
     pidx=i;pgrid=gridId||'avatarGrid';
+    _cost=cost||AVATAR_UNLOCK_COST;
     const p=Player.get();
+    const isPremium=i>=PREMIUM_AVATAR_START;
     $('unlockAvatarBig').textContent=emoji;
     $('unlockBalance').textContent=p.coins;
+    // Update cost display
+    const costEl=document.querySelector('#avatarUnlockOverlay .ov-sub strong');
+    if(costEl)costEl.textContent=(isPremium?'💎 8,000':'3,000')+' 🪙';
     // Move overlay to top of body so it appears above settings panel
     const ov=$('avatarUnlockOverlay');
     document.body.appendChild(ov);
@@ -586,20 +591,19 @@ const AvatarUnlock = (() => {
   }
   function confirm(){
     const p=Player.get();
-    if(p.coins<AVATAR_UNLOCK_COST){
+    if(p.coins<_cost){
       $('avatarUnlockOverlay').style.display='none';
       return;
     }
-    Player.addCoins(-AVATAR_UNLOCK_COST);
+    Player.addCoins(-_cost);
     Player.unlockAvatar(pidx);
     Sound.play('unlock');
     $('avatarUnlockOverlay').style.display='none';
     Profile.selectByIndex(pidx,pgrid);
-    // Rebuild both grids
     Profile.rebuildGrid('avatarGrid');
     Profile.rebuildGrid('settingsAvatarGrid');
     Badges.check();
-    pidx=null;
+    pidx=null;_cost=AVATAR_UNLOCK_COST;
   }
   function cancel(){pidx=null;$('avatarUnlockOverlay').style.display='none';}
   return{promptFromGrid,confirm,cancel};
@@ -712,10 +716,20 @@ const Profile = (() => {
     const g=$(gid);if(!g)return;g.innerHTML='';
     AVATARS.forEach((e,i)=>{
       const ul=Player.isAvatarUnlocked(i);
+      const isPremium=i>=PREMIUM_AVATAR_START;
+      const cost=isPremium?PREMIUM_AVATAR_COST:AVATAR_UNLOCK_COST;
       const d=document.createElement('div');
-      d.className='avatar-item'+(i===selIdx?' selected':'')+(ul?'':' locked');
-      d.textContent=e;d.title=ul?e:'🔒 5,000 🪙';
-      d.onclick=()=>{if(!ul){AvatarUnlock.promptFromGrid(i,e,gid);return;}selectByIndex(i,gid);};
+      d.className='avatar-item'+(i===selIdx?' selected':'')+(ul?'':(isPremium?' premium locked':' locked'));
+      d.textContent=e;
+      d.title=ul?e:(isPremium?'💎 8,000 🪙':'🔒 3,000 🪙');
+      if(isPremium&&!ul){
+        const badge=document.createElement('span');
+        badge.style.cssText='position:absolute;bottom:1px;right:1px;font-size:.5rem;';
+        badge.textContent='💎';
+        d.style.position='relative';
+        d.appendChild(badge);
+      }
+      d.onclick=()=>{if(!ul){AvatarUnlock.promptFromGrid(i,e,gid,cost);return;}selectByIndex(i,gid);};
       g.appendChild(d);
     });
   }
