@@ -163,7 +163,7 @@
     _alert(msg) {
       const el = document.getElementById('securityAlert');
       if (!el) return;
-      el.textContent = '🔒 Security: ' + msg.split(':')[0].replace(/_/g, ' ');
+      el.textContent = '🔒 ' + msg.split(':')[0].replace(/_/g, ' ');
       el.style.display = 'block';
       setTimeout(() => { el.style.display = 'none'; }, 4000);
     },
@@ -421,7 +421,7 @@
   const DataBackup = {
     export() {
       const p = window._rawPlayerGet ? window._rawPlayerGet() : null;
-      if (!p) { alert('No player data to export.'); return; }
+      if (!p) { SecurityLog.warn('No player data to export'); return; }
       const payload  = JSON.stringify(p);
       const signed   = signData(xorEncrypt(payload));
       const blob     = new Blob([signed], { type: 'application/json' });
@@ -439,17 +439,17 @@
         try {
           const raw  = e.target.result;
           const enc  = verifyData(raw);
-          if (!enc) { alert('❌ Invalid or tampered backup file!'); return; }
+          if (!enc) { SecurityLog.warn('Invalid backup file'); return; }
           const json = xorDecrypt(enc);
-          if (!json) { alert('❌ Could not decrypt backup.'); return; }
+          if (!json) { SecurityLog.warn('Could not decrypt backup'); return; }
           const data = JSON.parse(json);
-          if (!data.name || typeof data.coins !== 'number') { alert('❌ Corrupted backup.'); return; }
+          if (!data.name || typeof data.coins !== 'number') { SecurityLog.warn('Corrupted backup'); return; }
           // Restore
           localStorage.setItem('qb_player', JSON.stringify(data));
-          alert('✅ Backup restored! Refreshing...');
+          console.log('Backup restored');
           setTimeout(() => location.reload(), 800);
         } catch (err) {
-          alert('❌ Restore failed: ' + err.message);
+          console.warn('Restore failed:', err.message);
         }
       };
       reader.readAsText(file);
@@ -582,53 +582,9 @@ const ADMIN_KEYS = ['qb_admin_pass','qb_admin_log','qb_admin_gamecfg',
     document.body.appendChild(pin);
 
     // Security panel inside Settings (append button)
+    // Security section hidden from settings panel
     window.addEventListener('load', () => {
-      const dangerSection = document.querySelector('.btn-danger')?.closest('.settings-section');
-      if (dangerSection) {
-        const secSection = document.createElement('div');
-        secSection.className = 'settings-section';
-        secSection.innerHTML = `
-          <div class="settings-label">🔐 Security</div>
-          <div class="setting-row">
-            <span>Profile PIN Lock</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="settingPin" onchange="Security.togglePin(this.checked)" />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          <div id="pinSetupRow" style="display:none" class="setting-row">
-            <span>Set New PIN</span>
-            <input id="newPinInput" type="password" maxlength="4" inputmode="numeric"
-              placeholder="4 digits"
-              style="width:90px;text-align:center;padding:6px 10px;background:var(--bg3);
-                     border:2px solid var(--border);border-radius:8px;
-                     color:var(--text);font-family:'Nunito',sans-serif;font-size:.9rem;outline:none;" />
-            <button class="btn btn-primary" style="padding:6px 14px;font-size:.8rem;border-radius:8px"
-              onclick="Security.savePin()">Save</button>
-          </div>
-          <div class="setting-row">
-            <span>Data Backup</span>
-            <button class="btn btn-ghost" style="padding:6px 14px;font-size:.78rem;border-radius:8px"
-              onclick="Security.exportData()">📤 Export</button>
-          </div>
-          <div class="setting-row">
-            <span>Restore Backup</span>
-            <label class="btn btn-ghost" style="padding:6px 14px;font-size:.78rem;border-radius:8px;cursor:pointer">
-              📥 Import
-              <input type="file" accept=".qbb,.json" style="display:none"
-                onchange="Security.importData(this.files[0])" />
-            </label>
-          </div>
-          <div class="setting-row">
-            <span>Security Log</span>
-            <button class="btn btn-ghost" style="padding:6px 14px;font-size:.78rem;border-radius:8px"
-              onclick="Security.showLog()">🕵️ View</button>
-          </div>
-        `;
-        dangerSection.parentNode.insertBefore(secSection, dangerSection);
-        // Sync PIN toggle
-        if ($('settingPin')) $('settingPin').checked = PinLock.hasPin();
-      }
+      // Security UI not shown to players
     });
   }
 
@@ -651,10 +607,10 @@ const ADMIN_KEYS = ['qb_admin_pass','qb_admin_log','qb_admin_gamecfg',
       const pin = input.value.trim();
       if (PinLock.setPin(pin)) {
         input.value = '';
-        alert('✅ PIN set successfully!');
+        console.log('PIN set');
         const row = $('pinSetupRow'); if (row) row.style.display = 'none';
       } else {
-        alert('❌ PIN must be exactly 4 digits (0-9)');
+        console.log('PIN error');
       }
     },
 
@@ -666,7 +622,7 @@ const ADMIN_KEYS = ['qb_admin_pass','qb_admin_log','qb_admin_gamecfg',
 
     lockNow() {
       if (PinLock.hasPin()) PinLock.lock();
-      else alert('Set a PIN first in Settings → Security');
+      else console.log('No PIN set');
     },
 
     exportData() { DataBackup.export(); },
@@ -678,13 +634,7 @@ const ADMIN_KEYS = ['qb_admin_pass','qb_admin_log','qb_admin_gamecfg',
     },
 
     showLog() {
-      const logs = SecurityLog.events;
-      if (!logs.length) { alert('✅ No security events recorded.'); return; }
-      const msg = logs.slice(-20).map(e => {
-        const d = new Date(e.ts);
-        return `[${d.toLocaleTimeString()}] ${e.msg}`;
-      }).join('\n');
-      alert('🔒 Security Log (last 20):\n\n' + msg);
+      // Security log hidden from players
     },
 
     // For Settings panel sync
