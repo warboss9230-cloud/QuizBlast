@@ -202,7 +202,7 @@
 
   <!-- Sticky player header -->
   <div class="home-header">
-    <button class="btn-back" onclick="App.goTo('screen-splash')">←</button>
+    <!-- Left: Avatar + Name -->
     <button class="player-pill" onclick="Settings.open()" title="Edit Profile">
       <span class="pp-avatar" id="hudAvatar">🐉</span>
       <div class="pp-info">
@@ -211,12 +211,12 @@
         <span class="pp-level">Lv <span id="hudLevel">1</span></span>
       </div>
     </button>
-    <!-- Coins + Settings stacked vertically on right -->
-    <div class="home-right-col">
-      <div class="coins-chip">
-        <span>🪙</span><span id="hudCoins">0</span>
-      </div>
+    <!-- Center: Coins -->
+    <div class="coins-chip" style="position:absolute;left:50%;transform:translateX(-50%)">
+      <span>🪙</span><span id="hudCoins">0</span>
     </div>
+    <!-- Right: Space for settings FAB -->
+    <div style="width:46px;flex-shrink:0"></div>
   </div>
 
   <!-- Daily Challenge -->
