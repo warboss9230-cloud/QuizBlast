@@ -2239,4 +2239,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   App.init();
   AdminAccess.init();
   FairPlay.init();
+
+  // Hide Install App button if PWA already installed
+  if (PWAInstall.isInstalled()) {
+    const installBtn = document.querySelector('[onclick="PWAInstall.install()"]');
+    if (installBtn) installBtn.style.display = 'none';
+  }
+
+  // Also hide when install completes
+  window.addEventListener('appinstalled', () => {
+    const installBtn = document.querySelector('[onclick="PWAInstall.install()"]');
+    if (installBtn) installBtn.style.display = 'none';
+  });
 });
