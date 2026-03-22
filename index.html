@@ -940,6 +940,19 @@
       <div class="settings-label">⚠️ Danger Zone</div>
       <button class="btn btn-danger btn-full" onclick="Settings.resetProgress()">🗑️ Reset All Progress</button>
     </div>
+    <!-- Account -->
+    <div class="settings-section">
+      <div class="settings-label">👤 Account</div>
+      <div id="settingsAccountInfo" style="font-size:.78rem;color:#b8a9d9;font-weight:700;margin-bottom:10px;padding:8px 12px;background:rgba(200,180,255,.06);border-radius:10px">
+        Loading...
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="SBAuth.logout()" style="margin-bottom:8px">
+        🚪 Logout
+      </button>
+      <button class="btn btn-ghost btn-full" style="font-size:.78rem" onclick="SBLoginUI.show()">
+        🔄 Switch Account
+      </button>
+    </div>
     <div class="settings-version">QuizBlast v3.1 · Made with ❤️</div>
     <!-- Hidden: owner-only settings kept in sync by JS -->
     <span id="rewardEveryVal" style="display:none">5</span>
