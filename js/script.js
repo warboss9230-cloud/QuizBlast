@@ -638,6 +638,118 @@ const LevelUp = {
   }
 };
 
+
+/* ════════════════════════════════════════════════════
+   PWA INSTALL BANNER
+════════════════════════════════════════════════════ */
+const PWAInstall = (() => {
+  let _deferredPrompt = null;
+  let _shown = false;
+
+  // Catch install prompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredPrompt = e;
+    // Show banner after 3 seconds
+    setTimeout(() => showBanner(), 3000);
+  });
+
+  function showBanner() {
+    if (_shown) return;
+    if (localStorage.getItem('qb_pwa_dismissed')) return;
+    _shown = true;
+
+    const banner = document.createElement('div');
+    banner.id = 'pwaBanner';
+    banner.style.cssText = `
+      position:fixed;bottom:0;left:0;right:0;z-index:99999;
+      background:linear-gradient(135deg,#1a1625,#2a2440);
+      border-top:2px solid rgba(179,157,219,.3);
+      padding:16px 20px;
+      font-family:'Nunito',sans-serif;
+      box-shadow:0 -8px 32px rgba(0,0,0,.5);
+      animation:slideUp .4s cubic-bezier(.36,.07,.19,.97) both;`;
+
+    banner.innerHTML = `
+      <style>
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
+        }
+      </style>
+      <div style="display:flex;align-items:center;gap:12px;max-width:500px;margin:0 auto">
+        <img src="icons/quizblast.png" style="width:52px;height:52px;border-radius:12px;flex-shrink:0"/>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;color:#f0eaff">
+            🚀 QuizBlast
+          </div>
+          <div style="font-size:.75rem;color:#b8a9d9;font-weight:700">
+            App install karo ya browser mein khelo!
+          </div>
+        </div>
+        <button onclick="PWAInstall.dismiss()"
+          style="background:transparent;border:none;color:#6b7280;
+                 font-size:1.2rem;cursor:pointer;padding:4px;flex-shrink:0">✕</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;max-width:500px;margin-left:auto;margin-right:auto">
+        <button onclick="PWAInstall.install()"
+          style="flex:1;padding:11px;border:none;border-radius:50px;
+                 background:linear-gradient(135deg,#b39ddb,#ce93d8);
+                 color:#2d2040;font-family:'Nunito',sans-serif;
+                 font-size:.88rem;font-weight:900;cursor:pointer;
+                 box-shadow:0 4px 16px rgba(179,157,219,.3)">
+          📱 App Install Karo
+        </button>
+        <button onclick="PWAInstall.dismiss()"
+          style="flex:1;padding:11px;border:2px solid rgba(200,180,255,.2);
+                 border-radius:50px;background:transparent;
+                 color:#b8a9d9;font-family:'Nunito',sans-serif;
+                 font-size:.88rem;font-weight:800;cursor:pointer">
+          ▶ Browser mein khelo
+        </button>
+      </div>`;
+
+    document.body.appendChild(banner);
+  }
+
+  async function install() {
+    if (!_deferredPrompt) {
+      // Fallback — show instructions
+      showManualInstall();
+      return;
+    }
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    _deferredPrompt = null;
+    dismiss();
+    if (outcome === 'accepted') {
+      console.log('PWA installed!');
+    }
+  }
+
+  function showManualInstall() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const msg = isIOS
+      ? '📱 iOS mein install karne ke liye:\n\nSafari mein:\n1. Share button dabao (⬆️)\n2. "Add to Home Screen" select karo\n3. "Add" dabao!'
+      : '📱 Install karne ke liye:\n\nChrome mein:\n1. 3 dots menu (⋮) dabao\n2. "Add to Home Screen" select karo\n3. "Add" dabao!';
+    alert(msg);
+  }
+
+  function dismiss() {
+    localStorage.setItem('qb_pwa_dismissed', '1');
+    const banner = document.getElementById('pwaBanner');
+    if (banner) banner.remove();
+  }
+
+  // Check if already installed
+  function isInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  }
+
+  return { install, dismiss, showBanner, isInstalled };
+})();
+
 /* ════════════════════════════════════════════════════
    APP / NAVIGATION
 ════════════════════════════════════════════════════ */
