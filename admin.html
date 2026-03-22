@@ -793,7 +793,7 @@ const Auth={
     const pw=$('lPass').value;
     if(!pw){$('lErr').textContent='Enter password.';return;}
     const h=await sha256(pw);
-    const stored=localStorage.getItem(K.pass)||await sha256('admin@quizblast');
+    const stored=localStorage.getItem(K.pass)||await sha256('Harendra91');
     if(h===stored){
       this.tries=0;$('loginWrap').style.display='none';
       $('adminWrap').style.display='flex';$('lErr').textContent='';$('lPass').value='';
