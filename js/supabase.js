@@ -305,7 +305,20 @@ const SBAuth = (() => {
   function isLoggedIn() { return !!_user; }
   function onChange(fn) { _listeners.push(fn); }
 
-  return { init, signUp, signIn, signOut, autoLogin, updateProfile, getUser, getProfile, isLoggedIn, onChange, loadProfile };
+  async function logout() {
+    await _sb.auth.signOut();
+    _user = null; _profile = null;
+    localStorage.removeItem('qb_guest_mode');
+    localStorage.removeItem('qb_device_id');
+    // Show login screen
+    SBLoginUI.show();
+  }
+
+  function isGuest() {
+    return localStorage.getItem('qb_guest_mode') === '1';
+  }
+
+  return { init, signUp, signIn, signOut, autoLogin, updateProfile, getUser, getProfile, isLoggedIn, onChange, loadProfile, logout, isGuest };
 })();
 
 /* ════════════════════════════════════════════════════════════
@@ -391,6 +404,7 @@ const SBLeaderboard = (() => {
 
   async function submit(score, accuracy, subject, cls, mode) {
     if (!SBAuth.isLoggedIn()) return;
+    if (SBAuth.isGuest()) return; // Guest leaderboard mein nahi
     const profile = SBAuth.getProfile();
     if (!profile) return;
     try {
@@ -577,6 +591,16 @@ const SBLoginUI = (() => {
           <p id="sbModeLabel" style="color:#b8a9d9;font-size:.72rem;
              font-weight:700;margin-top:14px">
             New here? Create an account above!</p>
+
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,180,255,.1)">
+            <button onclick="SBLoginUI.playAsGuest()"
+              style="width:100%;padding:10px;border:1px solid rgba(200,180,255,.15);
+                     border-radius:50px;background:transparent;
+                     color:#6b7280;font-family:'Nunito',sans-serif;
+                     font-size:.78rem;font-weight:700;cursor:pointer">
+              👻 Guest ke roop mein khelo (Leaderboard nahi)
+            </button>
+          </div>
         </div>`;
       document.body.appendChild(overlay);
 
@@ -662,7 +686,14 @@ const SBLoginUI = (() => {
     }
   }
 
-  return { show, hide, login, switchMode };
+  // Guest mode — play without account, no leaderboard
+  function playAsGuest() {
+    localStorage.setItem('qb_guest_mode', '1');
+    hide();
+    if (typeof App !== 'undefined') App.init();
+  }
+
+  return { show, hide, login, switchMode, playAsGuest };
 })();
 
 /* ════════════════════════════════════════════════════════════
