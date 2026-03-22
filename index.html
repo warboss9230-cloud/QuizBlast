@@ -80,22 +80,59 @@
       <span class="sr-logo-text">QuizBlast</span>
     </div>
 
-    <!-- Player card -->
-    <div class="sr-player-card card">
-      <div class="sr-avatar" id="srAvatar">🐉</div>
-      <div class="sr-info">
-        <div class="sr-name" id="srName">Player</div>
-        <div class="sr-level">Level <span id="srLevel">1</span></div>
-        <div class="sr-xp-track"><div class="sr-xp-fill" id="srXpBar"></div></div>
+    <!-- Player card — Capsule style -->
+    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(200,180,255,.2);
+                border-radius:50px;padding:10px 16px;
+                display:flex;align-items:center;gap:12px;
+                margin:0 16px;backdrop-filter:blur(10px);">
+      <!-- Avatar -->
+      <div id="srAvatar" style="font-size:2rem;line-height:1;flex-shrink:0">🐉</div>
+      <!-- Name + Level + XP -->
+      <div style="flex:1;min-width:0">
+        <div id="srName" style="font-family:'Baloo 2',cursive;font-size:1rem;
+             font-weight:800;color:#f0eaff;white-space:nowrap;
+             overflow:hidden;text-overflow:ellipsis">Player</div>
+        <div style="font-size:.7rem;color:#b8a9d9;font-weight:700">
+          Lv <span id="srLevel">1</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.12);border-radius:4px;margin-top:4px">
+          <div id="srXpBar" style="height:100%;background:linear-gradient(90deg,#b39ddb,#ce93d8);
+               border-radius:4px;width:0%;transition:width .5s ease"></div>
+        </div>
       </div>
-      <div class="sr-coins">🪙<span id="srCoins">0</span></div>
+      <!-- Coins capsule -->
+      <div style="background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);
+                  border-radius:50px;padding:6px 12px;
+                  display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <span style="font-size:.9rem">🪙</span>
+        <span id="srCoins" style="font-family:'Baloo 2',cursive;font-size:.9rem;
+              font-weight:800;color:#ffe082">0</span>
+      </div>
     </div>
 
-    <!-- Quick stats row -->
-    <div class="sr-stats-row">
-      <div class="sr-stat"><div class="sr-stat-val" id="srGames">0</div><div class="sr-stat-lbl">Games</div></div>
-      <div class="sr-stat"><div class="sr-stat-val" id="srStreak">0</div><div class="sr-stat-lbl">🔥 Streak</div></div>
-      <div class="sr-stat"><div class="sr-stat-val" id="srBadges">0</div><div class="sr-stat-lbl">🏅 Badges</div></div>
+    <!-- Quick stats row — smaller -->
+    <div style="display:flex;gap:8px;margin:10px 16px 0;justify-content:center">
+      <div style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,180,255,.12);
+                  border-radius:14px;padding:8px 4px;text-align:center">
+        <div id="srGames" style="font-family:'Baloo 2',cursive;font-size:1.1rem;
+             font-weight:800;color:#f0eaff">0</div>
+        <div style="font-size:.6rem;color:#b8a9d9;font-weight:700;text-transform:uppercase;
+             letter-spacing:.5px">Games</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,180,255,.12);
+                  border-radius:14px;padding:8px 4px;text-align:center">
+        <div id="srStreak" style="font-family:'Baloo 2',cursive;font-size:1.1rem;
+             font-weight:800;color:#f0eaff">0</div>
+        <div style="font-size:.6rem;color:#b8a9d9;font-weight:700;text-transform:uppercase;
+             letter-spacing:.5px">🔥 Streak</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,180,255,.12);
+                  border-radius:14px;padding:8px 4px;text-align:center">
+        <div id="srBadges" style="font-family:'Baloo 2',cursive;font-size:1.1rem;
+             font-weight:800;color:#f0eaff">0</div>
+        <div style="font-size:.6rem;color:#b8a9d9;font-weight:700;text-transform:uppercase;
+             letter-spacing:.5px">🏅 Badges</div>
+      </div>
     </div>
 
     <!-- Main play button -->
