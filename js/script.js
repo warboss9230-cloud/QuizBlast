@@ -441,6 +441,18 @@ const Settings = (() => {
     Profile.initEdit();
     $('settingsOverlay').style.display='flex';
     document.body.classList.add('overlay-open');
+    // Show account info
+    const accInfo = $('settingsAccountInfo');
+    if (accInfo && typeof SBAuth !== 'undefined') {
+      if (SBAuth.isGuest()) {
+        accInfo.innerHTML = '👻 Guest mode mein ho — <strong>Login karo</strong> leaderboard ke liye!';
+      } else if (SBAuth.isLoggedIn()) {
+        const profile = SBAuth.getProfile();
+        accInfo.innerHTML = `✅ Logged in: <strong>${profile?.username || 'Player'}</strong>`;
+      } else {
+        accInfo.innerHTML = '❌ Login nahi hai';
+      }
+    }
   }
   function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');$('avatarUnlockOverlay').style.display='none';AvatarUnlock.cancel();}
   function applyTheme(v){cfg.theme=v?'dark':'light';document.documentElement.setAttribute('data-theme',cfg.theme);persist();}
