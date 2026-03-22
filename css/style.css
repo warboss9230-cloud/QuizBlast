@@ -212,28 +212,28 @@ body.overlay-open .fab-sound {
 
 /* ── Sticky header ── */
 .home-header {
-  display:flex; align-items:center; gap:8px;
-  padding:8px 12px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; padding:6px 12px;
   position:sticky; top:0; z-index:20;
   background:var(--bg); border-bottom:1px solid var(--border);
 }
 
-/* Player pill */
+/* Player pill — compact half size */
 .player-pill {
-  flex:1; min-width:0;
-  display:flex; align-items:center; gap:7px;
+  display:flex; align-items:center; gap:5px;
   background:var(--card); border:1.5px solid var(--border);
-  border-radius:50px; padding:5px 12px 5px 5px;
+  border-radius:50px; padding:3px 8px 3px 3px;
   cursor:pointer; transition:var(--tr); text-align:left;
+  max-width:160px;
 }
-.player-pill:hover { border-color:var(--accent); background:var(--card2); transform:translateY(-1px); box-shadow:0 4px 14px rgba(108,99,255,.25); }
+.player-pill:hover { border-color:var(--accent); background:var(--card2); }
 .player-pill:active { transform:scale(.97); }
-.pp-avatar { font-size:1.5rem; flex-shrink:0; filter:drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
-.pp-info   { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-.pp-name   { font-family:var(--fh); font-size:.78rem; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pp-xp-track { height:3px; background:var(--bg3); border-radius:5px; overflow:hidden; }
+.pp-avatar { font-size:1.1rem; flex-shrink:0; }
+.pp-info   { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.pp-name   { font-family:var(--fh); font-size:.65rem; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pp-xp-track { height:2px; background:var(--bg3); border-radius:5px; overflow:hidden; }
 .pp-xp-fill  { height:100%; background:linear-gradient(90deg,#b39ddb,#80deea); border-radius:5px; width:0%; transition:width .6s ease; }
-.pp-level  { font-size:.6rem; font-weight:900; color:var(--gold); }
+.pp-level  { font-size:.55rem; font-weight:800; color:var(--gold); }
 
 /* Right column in home header */
 .home-right-col {
