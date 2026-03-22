@@ -19,42 +19,30 @@ const AVATARS = [
   '🧛','🎃','🤠','🧜','🧝',
   '🧞','🧟','👾','🤺','🦹',
   '🍕','🎮','🎯','🎲','🃏',
-  // 💎 PREMIUM (55-154) — 8,000 🪙
+  // 💎 PREMIUM (55-104) — 8,000 🪙
   // 🦁 Animals
-  '🐲','🦕','🦖','🐊','🦂',
-  '🦅','🦁','🐅','🦈','🐺',
-  '🦊','🦝','🐗','🦌','🦬',
-  '🐂','🦣',
+  '🐲','🦕','🐊','🦂','🦣',
+  '🐗','🦌',
   // ⚡ Anime
-  '👺','👹','🤺','🥷','👾',
-  '🎭','🎪','🃏','🀄','🎴',
-  '👻','💀','☠️','🕷️','🦇',
-  '🎰',
+  '👺','👹','👻','💀','☠️',
+  '🕷️','🦇','🎭',
   // 🦸 Superhero
-  '🦸','🦹','🧙','🧛','🧜',
-  '🧝','🧞','🧟','👽','🤖',
-  '🛸','🦾','🦿','🏹','🗡️',
-  '🪖',
+  '🛸','🦾','🦿','🗡️','🪖',
+  '🏹','🧲','⚗️',
   // 🔮 Symbols
-  '⚜️','🔮','🪄','🧲','⚗️',
-  '🔭','🔬','💡','🧬','☢️',
-  '☣️','⚛️','🌀','🔯','✡️',
-  '☯️',
+  '⚜️','🔮','🪄','🔯','✡️',
+  '☯️','⚛️','🌀','☢️',
   // 😎 Emojis
   '🌟','💫','✨','🎆','🎇',
-  '🌈','🌊','🌋','🌪️','☄️',
-  '🪐','🌙','⭐','🌠','🎑',
-  '🎃','🎄',
+  '🌈','☄️','🪐','🌠',
   // 🕉️ Gods & Mythology
   '🕉️','☸️','✝️','🛕','⛩️',
-  '🌸','🏵️','🪷','🌺','🌻',
-  '👁️','🪬','🛡️','⚔️','🏺',
-  '🧿','🔱','🌞',
+  '🪬','🔱','👁️'
 ];
 const FREE_AVATAR_COUNT  = 5;
 const AVATAR_UNLOCK_COST = 3000;
-const PREMIUM_AVATAR_START = 55;  // Index 55-154 are premium (100 avatars)
-const PREMIUM_AVATAR_COST = 8000; // Premium costs 8,000 coins
+const PREMIUM_AVATAR_START = 55;  // Index 55-104 are premium (50 avatars)
+const PREMIUM_AVATAR_COST = 3000; // Premium costs 3,000 coins
 const COIN_CORRECT=10, COIN_WRONG=-5, XP_CORRECT=10, XP_LEVEL_UP=100;
 const STREAK_BONUS_3=5, STREAK_BONUS_5=10, REWARD_EVERY=5;
 const POWERUP_COSTS = { hint:20,'5050':30,skip:40,freeze:50 };
@@ -441,20 +429,9 @@ const Settings = (() => {
     Profile.initEdit();
     $('settingsOverlay').style.display='flex';
     document.body.classList.add('overlay-open');
-    // Show account info
-    const accInfo = $('settingsAccountInfo');
-    if (accInfo && typeof SBAuth !== 'undefined') {
-      if (SBAuth.isGuest()) {
-        accInfo.innerHTML = '👻 Guest mode mein ho — <strong>Login karo</strong> leaderboard ke liye!';
-      } else if (SBAuth.isLoggedIn()) {
-        const profile = SBAuth.getProfile();
-        accInfo.innerHTML = `✅ Logged in: <strong>${profile?.username || 'Player'}</strong>`;
-      } else {
-        accInfo.innerHTML = '❌ Login nahi hai';
-      }
-    }
+
   }
-  function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');$('avatarUnlockOverlay').style.display='none';AvatarUnlock.cancel();}
+  function close(){save();applyAll();$('settingsOverlay').style.display='none';document.body.classList.remove('overlay-open');$('avatarUnlockOverlay').style.display='none';AvatarUnlock.cancel();if(typeof SettingsAvatar!=='undefined')SettingsAvatar.close();}
   function applyTheme(v){cfg.theme=v?'dark':'light';document.documentElement.setAttribute('data-theme',cfg.theme);persist();}
   function applySound(v){cfg.sound=v;Sound.setMuted(!v);persist();}
   function applyAnimations(v){cfg.animations=v;if(!v)document.documentElement.setAttribute('data-no-anim','');else document.documentElement.removeAttribute('data-no-anim');persist();}
@@ -614,7 +591,7 @@ const AvatarUnlock = (() => {
     $('unlockBalance').textContent=p.coins;
     // Update cost display
     const costEl=document.querySelector('#avatarUnlockOverlay .ov-sub strong');
-    if(costEl)costEl.textContent=(isPremium?'💎 8,000':'3,000')+' 🪙';
+    if(costEl)costEl.textContent=(isPremium?'💎 3,000':'3,000')+' 🪙';
     // Move overlay to top of body so it appears above settings panel
     const ov=$('avatarUnlockOverlay');
     document.body.appendChild(ov);
@@ -762,6 +739,30 @@ const PWAInstall = (() => {
   return { install, dismiss, showBanner, isInstalled };
 })();
 
+
+/* ════════════════════════════════════════════════════
+   SETTINGS AVATAR TOGGLE
+════════════════════════════════════════════════════ */
+const SettingsAvatar = {
+  _open: false,
+  toggle() {
+    this._open = !this._open;
+    const section = document.getElementById('avatarSection');
+    const icon    = document.getElementById('avatarToggleIcon');
+    if (section) section.style.display = this._open ? 'block' : 'none';
+    if (icon)    icon.textContent = this._open ? '▲' : '▼';
+    // Build grid when opened
+    if (this._open) Profile.rebuildGrid('settingsAvatarGrid');
+  },
+  close() {
+    this._open = false;
+    const section = document.getElementById('avatarSection');
+    const icon    = document.getElementById('avatarToggleIcon');
+    if (section) section.style.display = 'none';
+    if (icon)    icon.textContent = '▼';
+  }
+};
+
 /* ════════════════════════════════════════════════════
    APP / NAVIGATION
 ════════════════════════════════════════════════════ */
@@ -865,7 +866,7 @@ const Profile = (() => {
       const d=document.createElement('div');
       d.className='avatar-item'+(i===selIdx?' selected':'')+(ul?'':(isPremium?' premium locked':' locked'));
       d.textContent=e;
-      d.title=ul?e:(isPremium?'💎 8,000 🪙':'🔒 3,000 🪙');
+      d.title=ul?e:(isPremium?'💎 3,000 🪙':'🔒 3,000 🪙');
       if(isPremium&&!ul){
         const badge=document.createElement('span');
         badge.style.cssText='position:absolute;bottom:1px;right:1px;font-size:.5rem;';
