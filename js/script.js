@@ -2101,6 +2101,98 @@ const AdminCfg = (() => {
 })();
 
 /* ── Boot ─────────────────────────────────────── */
+
+/* ════════════════════════════════════════════════════
+   ANDROID BACK BUTTON SUPPORT
+════════════════════════════════════════════════════ */
+const BackButton = (() => {
+
+  // Screen history stack
+  const _history = [];
+
+  // Override App.goTo to track history
+  const _origGoTo = App.goTo.bind(App);
+  App.goTo = function(id) {
+    const current = document.querySelector('.screen.active')?.id;
+    if (current && current !== id) {
+      _history.push(current);
+    }
+    _origGoTo(id);
+  };
+
+  // Handle back button / popstate
+  window.addEventListener('popstate', (e) => {
+    e.preventDefault();
+    handleBack();
+  });
+
+  // Push dummy state so back button is intercepted
+  history.pushState({ page: 'game' }, '', '');
+
+  function handleBack() {
+    // Push state again to keep intercepting
+    history.pushState({ page: 'game' }, '', '');
+
+    // If any overlay is open — close it first
+    const overlays = [
+      'settingsOverlay',
+      'avatarUnlockOverlay',
+      'rewardOverlay',
+      'levelUpOverlay',
+      'badgePopup',
+      'stageClearOverlay',
+      'bossResultOverlay',
+      'taResultOverlay',
+      'namePromptOverlay',
+      'sbNotifOverlay',
+      'playerRewardPanel',
+    ];
+
+    for (const id of overlays) {
+      const el = document.getElementById(id);
+      if (el && el.style.display !== 'none' && el.style.display !== '') {
+        el.style.display = 'none';
+        return;
+      }
+    }
+
+    // Get current screen
+    const current = document.querySelector('.screen.active')?.id;
+
+    // Screen back map
+    const backMap = {
+      'screen-select':      'screen-splash',
+      'screen-picker':      'screen-select',
+      'screen-quiz':        'screen-select',
+      'screen-result':      'screen-select',
+      'screen-progress':    'screen-splash',
+      'screen-leaderboard': 'screen-splash',
+      'screen-profile':     'screen-splash',
+      'screen-pvp-hub':     'screen-select',
+      'screen-pvp-game':    'screen-pvp-hub',
+    };
+
+    if (current === 'screen-splash') {
+      // On splash — confirm exit
+      if (confirm('QuizBlast se bahar jaana chahte ho?')) {
+        history.back();
+      }
+      return;
+    }
+
+    const goBack = backMap[current];
+    if (goBack) {
+      _origGoTo(goBack);
+    } else if (_history.length > 0) {
+      _origGoTo(_history.pop());
+    } else {
+      _origGoTo('screen-splash');
+    }
+  }
+
+  return { handleBack };
+})();
+
 document.addEventListener('DOMContentLoaded', async () => {
   AdminCfg.load();
   AdminCfg.mergeQuestions();
