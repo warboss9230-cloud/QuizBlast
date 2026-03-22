@@ -705,4 +705,114 @@ const SBLeaderboardUI = {
   }
 };
 
+
+/* ════════════════════════════════════════════════════════════
+   NOTIFICATIONS — Admin se player ko message
+════════════════════════════════════════════════════════════ */
+const SBNotifications = (() => {
+
+  async function check() {
+    if (!SBAuth.isLoggedIn()) return;
+    try {
+      const { data, error } = await _sb
+        .from('notifications')
+        .select('*')
+        .eq('user_id', SBAuth.getUser().id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
+
+      if (error || !data || !data.length) return;
+
+      // Show each notification one by one
+      for (const notif of data) {
+        await showNotif(notif);
+        // Mark as read
+        await _sb.from('notifications')
+          .update({ is_read: true })
+          .eq('id', notif.id);
+      }
+    } catch(e) {
+      console.warn('Notification check failed:', e);
+    }
+  }
+
+  function showNotif(notif) {
+    return new Promise((resolve) => {
+      // Remove existing
+      const existing = document.getElementById('sbNotifOverlay');
+      if (existing) existing.remove();
+
+      const colors = {
+        coins:   { bg: '#ffe082', icon: '🪙', grad: 'linear-gradient(135deg,#ffe082,#ffcc80)' },
+        xp:      { bg: '#ce93d8', icon: '⚡', grad: 'linear-gradient(135deg,#b39ddb,#ce93d8)' },
+        info:    { bg: '#80deea', icon: '📢', grad: 'linear-gradient(135deg,#80deea,#4dd0e1)' },
+        warning: { bg: '#ef9a9a', icon: '⚠️', grad: 'linear-gradient(135deg,#ef9a9a,#e57373)' },
+      };
+      const c = colors[notif.type] || colors.info;
+
+      const overlay = document.createElement('div');
+      overlay.id = 'sbNotifOverlay';
+      overlay.style.cssText = `
+        position:fixed;inset:0;z-index:999999;
+        background:rgba(0,0,0,0.6);
+        display:flex;align-items:center;justify-content:center;
+        padding:20px;font-family:'Nunito',sans-serif;
+        animation:fadeIn .3s ease;`;
+
+      overlay.innerHTML = `
+        <div style="background:#251f38;border:2px solid rgba(200,180,255,.2);
+                    border-radius:20px;padding:32px 24px;max-width:340px;
+                    width:100%;text-align:center;
+                    box-shadow:0 24px 60px rgba(0,0,0,.6);
+                    animation:popIn .4s cubic-bezier(.36,.07,.19,.97) both">
+
+          <div style="width:64px;height:64px;border-radius:50%;
+                      background:${c.grad};
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:2rem;margin:0 auto 16px">
+            ${c.icon}
+          </div>
+
+          <h3 style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;
+                     color:#f0eaff;margin-bottom:10px">
+            ${notif.title}
+          </h3>
+
+          <p style="color:#b8a9d9;font-size:.88rem;font-weight:700;
+                    line-height:1.5;margin-bottom:20px">
+            ${notif.message}
+          </p>
+
+          <div style="font-size:.68rem;color:#6b7280;font-weight:700;margin-bottom:16px">
+            ${new Date(notif.created_at).toLocaleString('en-IN')}
+          </div>
+
+          <button onclick="document.getElementById('sbNotifOverlay').remove()"
+            style="width:100%;padding:12px;border:none;border-radius:50px;
+                   background:${c.grad};
+                   color:#2d2040;font-family:'Nunito',sans-serif;
+                   font-size:.95rem;font-weight:900;cursor:pointer">
+            ✅ Got it!
+          </button>
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      // Auto resolve when closed
+      const btn = overlay.querySelector('button');
+      btn.addEventListener('click', () => {
+        setTimeout(resolve, 200);
+      });
+    });
+  }
+
+  // Check every 2 minutes while game is open
+  function startPolling() {
+    check(); // Check immediately on load
+    setInterval(check, 120000); // Then every 2 minutes
+  }
+
+  return { check, startPolling };
+})();
+
 console.log('✅ QuizBlast Supabase layer loaded');
