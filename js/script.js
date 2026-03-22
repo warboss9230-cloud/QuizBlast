@@ -19,21 +19,41 @@ const AVATARS = [
   '🧛','🎃','🤠','🧜','🧝',
   '🧞','🧟','👾','🤺','🦹',
   '🍕','🎮','🎯','🎲','🃏',
-  // 💎 PREMIUM (55-104) — 15,000 🪙
-  '🚀','🌙','⭐','🪐','☄️',
-  '🌊','🌋','🏔️','🌈','🌪️',
-  '🔥','❄️','⚡','🌸','🍄',
-  '🏆','👑','💎','🎭','🎪',
-  '🎸','🎹','🎺','🥁','🎻',
-  '🌍','🌏','🌎','🗺️','🧭',
-  '⚔️','🛡️','🏹','🪄','🔮',
-  '💀','☠️','🦴','👁️','🕷️',
-  '🐲','🦕','🐊','🦂','🪲',
-  '🧿','🌀','🔱','⚜️','🏅',
+  // 💎 PREMIUM (55-154) — 8,000 🪙
+  // 🦁 Animals
+  '🐲','🦕','🦖','🐊','🦂',
+  '🦅','🦁','🐅','🦈','🐺',
+  '🦊','🦝','🐗','🦌','🦬',
+  '🐂','🦣',
+  // ⚡ Anime
+  '👺','👹','🤺','🥷','👾',
+  '🎭','🎪','🃏','🀄','🎴',
+  '👻','💀','☠️','🕷️','🦇',
+  '🎰',
+  // 🦸 Superhero
+  '🦸','🦹','🧙','🧛','🧜',
+  '🧝','🧞','🧟','👽','🤖',
+  '🛸','🦾','🦿','🏹','🗡️',
+  '🪖',
+  // 🔮 Symbols
+  '⚜️','🔮','🪄','🧲','⚗️',
+  '🔭','🔬','💡','🧬','☢️',
+  '☣️','⚛️','🌀','🔯','✡️',
+  '☯️',
+  // 😎 Emojis
+  '🌟','💫','✨','🎆','🎇',
+  '🌈','🌊','🌋','🌪️','☄️',
+  '🪐','🌙','⭐','🌠','🎑',
+  '🎃','🎄',
+  // 🕉️ Gods & Mythology
+  '🕉️','☸️','✝️','🛕','⛩️',
+  '🌸','🏵️','🪷','🌺','🌻',
+  '👁️','🪬','🛡️','⚔️','🏺',
+  '🧿','🔱','🌞',
 ];
 const FREE_AVATAR_COUNT  = 5;
 const AVATAR_UNLOCK_COST = 3000;
-const PREMIUM_AVATAR_START = 55;  // Index 55+ are premium
+const PREMIUM_AVATAR_START = 55;  // Index 55-154 are premium (100 avatars)
 const PREMIUM_AVATAR_COST = 8000; // Premium costs 8,000 coins
 const COIN_CORRECT=10, COIN_WRONG=-5, XP_CORRECT=10, XP_LEVEL_UP=100;
 const STREAK_BONUS_3=5, STREAK_BONUS_5=10, REWARD_EVERY=5;
@@ -2003,6 +2023,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         _origSave();
         SBPlayer.pushDebounced();
       };
+      // Start notification polling
+      if (typeof SBNotifications !== 'undefined') {
+        SBNotifications.startPolling();
+      }
     } catch(e) {
       console.warn('Supabase init failed, running offline:', e);
     }
