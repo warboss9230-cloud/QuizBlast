@@ -927,8 +927,14 @@
         <input id="settingsNameInput" type="text" class="name-input settings-name-input" placeholder="Your name…" maxlength="20"/>
       </div>
       <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="Profile.saveFromSettings()">💾 Save Profile</button>
-      <p class="avatar-hint" style="margin:8px 0">🔒 Normal: <strong>3,000 🪙</strong> &nbsp;|&nbsp; 💎 Premium: <strong>8,000 🪙</strong></p>
-      <div class="avatar-grid settings-avatar-grid" id="settingsAvatarGrid"></div>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:8px;display:flex;align-items:center;justify-content:between;gap:8px"
+        onclick="SettingsAvatar.toggle()" id="avatarToggleBtn">
+        🎭 Avatar Choose Karo <span id="avatarToggleIcon" style="margin-left:auto">▼</span>
+      </button>
+      <div id="avatarSection" style="display:none">
+        <p class="avatar-hint" style="margin:8px 0">🔒 Normal: <strong>3,000 🪙</strong> &nbsp;|&nbsp; 💎 Premium: <strong>8,000 🪙</strong></p>
+        <div class="avatar-grid settings-avatar-grid" id="settingsAvatarGrid"></div>
+      </div>
     </div>
     <!-- Stats -->
     <div class="settings-section">
@@ -940,19 +946,7 @@
       <div class="settings-label">⚠️ Danger Zone</div>
       <button class="btn btn-danger btn-full" onclick="Settings.resetProgress()">🗑️ Reset All Progress</button>
     </div>
-    <!-- Account -->
-    <div class="settings-section">
-      <div class="settings-label">👤 Account</div>
-      <div id="settingsAccountInfo" style="font-size:.78rem;color:#b8a9d9;font-weight:700;margin-bottom:10px;padding:8px 12px;background:rgba(200,180,255,.06);border-radius:10px">
-        Loading...
-      </div>
-      <button class="btn btn-ghost btn-full" onclick="SBAuth.logout()" style="margin-bottom:8px">
-        🚪 Logout
-      </button>
-      <button class="btn btn-ghost btn-full" style="font-size:.78rem" onclick="SBLoginUI.show()">
-        🔄 Switch Account
-      </button>
-    </div>
+
     <div class="settings-version">QuizBlast v3.1 · Made with ❤️</div>
     <!-- Hidden: owner-only settings kept in sync by JS -->
     <span id="rewardEveryVal" style="display:none">5</span>
