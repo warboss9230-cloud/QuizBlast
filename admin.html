@@ -1698,15 +1698,23 @@ const PlayersTab = {
     if (!amt || amt <= 0) { document.getElementById('rewardMsg').textContent = '⚠️ Valid amount daalo!'; return; }
     try {
       const newCoins = (u.coins || 0) + amt;
+      // Update coins
       const { error } = await _sb.from('profiles')
         .update({ coins: newCoins, updated_at: new Date().toISOString() })
         .eq('username', u.username);
       if (error) throw error;
       u.coins = newCoins;
+      // Send notification
+      await _sb.from('notifications').insert({
+        user_id: u.id,
+        title: '🪙 Coins Mila!',
+        message: `Admin ne aapko 🪙${amt.toLocaleString()} coins diye hain! Naya balance: 🪙${newCoins.toLocaleString()}`,
+        type: 'coins'
+      });
       document.getElementById('rewardMsg').style.color = '#a5d6a7';
-      document.getElementById('rewardMsg').textContent = `✅ ${u.username} ko 🪙${amt} coins diye gaye!`;
+      document.getElementById('rewardMsg').textContent = `✅ ${u.username} ko 🪙${amt} coins + notification bheja!`;
       document.getElementById('coinAmount').value = '';
-      toast(`✅ ${u.username} को 🪙${amt} coins diye!`);
+      toast(`✅ ${u.username} को 🪙${amt} coins diye + notification!`);
     } catch(e) {
       document.getElementById('rewardMsg').style.color = '#ef9a9a';
       document.getElementById('rewardMsg').textContent = '❌ Error: ' + e.message;
@@ -1721,15 +1729,23 @@ const PlayersTab = {
     try {
       const newXP = (u.xp || 0) + amt;
       const newTotalXP = (u.total_xp || 0) + amt;
+      // Update XP
       const { error } = await _sb.from('profiles')
         .update({ xp: newXP, total_xp: newTotalXP, updated_at: new Date().toISOString() })
         .eq('username', u.username);
       if (error) throw error;
       u.xp = newXP;
+      // Send notification
+      await _sb.from('notifications').insert({
+        user_id: u.id,
+        title: '⚡ XP Mila!',
+        message: `Admin ne aapko ⚡${amt.toLocaleString()} XP diya hai! Karte raho acha kaam! 🎉`,
+        type: 'xp'
+      });
       document.getElementById('rewardMsg').style.color = '#a5d6a7';
-      document.getElementById('rewardMsg').textContent = `✅ ${u.username} ko ⚡${amt} XP diya gaya!`;
+      document.getElementById('rewardMsg').textContent = `✅ ${u.username} ko ⚡${amt} XP + notification bheja!`;
       document.getElementById('xpAmount').value = '';
-      toast(`✅ ${u.username} को ⚡${amt} XP diya!`);
+      toast(`✅ ${u.username} को ⚡${amt} XP diya + notification!`);
     } catch(e) {
       document.getElementById('rewardMsg').style.color = '#ef9a9a';
       document.getElementById('rewardMsg').textContent = '❌ Error: ' + e.message;
