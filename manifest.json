@@ -1,0 +1,44 @@
+{
+  "id": "/",
+  "name": "QuizBlast",
+  "short_name": "QuizBlast",
+  "description": "Smart Quiz for Class 1-12",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a1625",
+  "theme_color": "#b39ddb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "QuizBlast home screen on mobile"
+    },
+    {
+      "src": "icons/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "QuizBlast subject selection on desktop"
+    }
+  ],
+  "categories": ["education", "games"],
+  "lang": "en"
+}

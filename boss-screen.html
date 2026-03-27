@@ -1,0 +1,209 @@
+<!-- ══════════════════════════════════════
+     SCREEN 6 — BOSS BATTLE
+══════════════════════════════════════ -->
+<div id="screen-boss" class="screen">
+  <div class="boss-arena">
+    <div class="boss-topbar">
+      <button class="btn-back" onclick="BossMode.quit()">✕</button>
+      <span class="boss-topbar-title">⚔️ Boss Battle</span>
+      <span class="qtb-coins">🪙<span id="bossCoins">0</span></span>
+    </div>
+    <div class="boss-section">
+      <div class="boss-monster-wrap" id="bossMonsterWrap">
+        <div class="boss-aura"  id="bossAura"></div>
+        <div class="boss-aura boss-aura2" id="bossAura2"></div>
+
+        <div class="boss-monster" id="bossMonster">
+          <!-- Dark Fantasy SVG Boss Face -->
+          <svg class="boss-svg" id="bossSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="faceGrad" cx="40%" cy="35%" r="65%">
+                <stop offset="0%"   stop-color="var(--boss-color,#ff4455)" stop-opacity=".55"/>
+                <stop offset="100%" stop-color="#060002" stop-opacity="1"/>
+              </radialGradient>
+              <radialGradient id="irisGrad" cx="35%" cy="35%" r="60%">
+                <stop offset="0%"   stop-color="#fff" stop-opacity=".8"/>
+                <stop offset="40%"  stop-color="var(--boss-color,#ff4455)" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#330000" stop-opacity="1"/>
+              </radialGradient>
+              <radialGradient id="hornGrad" cx="30%" cy="20%" r="70%">
+                <stop offset="0%"   stop-color="#fff" stop-opacity=".25"/>
+                <stop offset="100%" stop-color="var(--boss-color,#ff4455)" stop-opacity="1"/>
+              </radialGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="deepglow">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- ── Chest (breathing) ── -->
+            <ellipse class="boss-chest" cx="100" cy="195" rx="55" ry="22"/>
+
+            <!-- ── Left horn ── -->
+            <g filter="url(#glow)">
+              <polygon class="boss-horn-shape" points="62,68 44,10 80,62" id="hornL"/>
+              <polygon class="boss-horn-detail" points="66,65 52,22 70,60"/>
+              <polygon class="boss-horn-shine"  points="62,64 50,20 58,58"/>
+              <!-- Small spikes -->
+              <polygon class="boss-horn-shape" points="52,56 38,28 60,52" style="opacity:.7"/>
+            </g>
+            <!-- ── Right horn ── -->
+            <g filter="url(#glow)">
+              <polygon class="boss-horn-shape right" points="138,68 156,10 120,62" id="hornR"/>
+              <polygon class="boss-horn-detail" points="134,65 148,22 130,60"/>
+              <polygon class="boss-horn-shine"  points="138,64 150,20 142,58"/>
+              <polygon class="boss-horn-shape right" points="148,56 162,28 140,52" style="opacity:.7"/>
+            </g>
+
+            <!-- ── Main face oval ── -->
+            <ellipse cx="100" cy="110" rx="72" ry="80" fill="url(#faceGrad)" stroke="var(--boss-color,#ff4455)" stroke-width="2"/>
+
+            <!-- Face depth / shadow at bottom -->
+            <ellipse cx="100" cy="155" rx="60" ry="30" fill="#000" opacity=".55"/>
+
+            <!-- ── Scale texture (dot grid) ── -->
+            <g class="boss-scale-dot" id="bossScales">
+              <!-- Row 1 -->
+              <circle cx="76"  cy="82"  r="2.2"/><circle cx="88"  cy="80"  r="2.2"/>
+              <circle cx="100" cy="79"  r="2.2"/><circle cx="112" cy="80"  r="2.2"/>
+              <circle cx="124" cy="82"  r="2.2"/>
+              <!-- Row 2 -->
+              <circle cx="70"  cy="94"  r="2.2"/><circle cx="82"  cy="92"  r="2.2"/>
+              <circle cx="94"  cy="91"  r="2.2"/><circle cx="106" cy="91"  r="2.2"/>
+              <circle cx="118" cy="92"  r="2.2"/><circle cx="130" cy="94"  r="2.2"/>
+              <!-- Row 3 cheek scales -->
+              <circle cx="66"  cy="108" r="2.8"/><circle cx="76"  cy="104" r="2.5"/>
+              <circle cx="134" cy="108" r="2.8"/><circle cx="124" cy="104" r="2.5"/>
+            </g>
+
+            <!-- ── Forehead crest ── -->
+            <path d="M78,68 Q88,58 100,62 Q112,58 122,68" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="2.5" opacity=".7" stroke-linecap="round"/>
+            <path d="M85,65 Q100,56 115,65" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".4"/>
+
+            <!-- ── Eye sockets (deep-set) ── -->
+            <ellipse cx="78" cy="104" rx="18" ry="15" class="boss-eye-socket" fill="#000" opacity=".8"/>
+            <ellipse cx="122" cy="104" rx="18" ry="15" class="boss-eye-socket" fill="#000" opacity=".8"/>
+
+            <!-- ── Brow ridge ── -->
+            <path d="M60,92 Q78,82 96,90" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="4" stroke-linecap="round" opacity=".8" id="browL"/>
+            <path d="M140,92 Q122,82 104,90" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="4" stroke-linecap="round" opacity=".8" id="browR"/>
+
+            <!-- ── Left eye ── -->
+            <g id="eyeGroupL" filter="url(#deepglow)">
+              <ellipse cx="78" cy="104" rx="13" ry="11" class="boss-sclera" fill="#080000"/>
+              <!-- Blood veins -->
+              <line class="boss-eye-vein" x1="67" y1="100" x2="74" y2="104"/>
+              <line class="boss-eye-vein" x1="69" y1="108" x2="75" y2="105"/>
+              <!-- Iris -->
+              <ellipse cx="78" cy="104" rx="8" ry="8.5" class="boss-iris" id="irisL" fill="url(#irisGrad)"/>
+              <!-- Pupil (vertical slit — reptilian) -->
+              <ellipse cx="78" cy="104" rx="2.5" ry="7" class="boss-pupil-shape" id="pupilL"/>
+              <!-- Shine -->
+              <ellipse cx="74" cy="100" rx="2.5" ry="1.8" class="boss-eye-shine"/>
+              <ellipse cx="76" cy="98"  rx="1.2" ry=".9" fill="#fff" opacity=".4"/>
+            </g>
+
+            <!-- ── Right eye ── -->
+            <g id="eyeGroupR" filter="url(#deepglow)">
+              <ellipse cx="122" cy="104" rx="13" ry="11" class="boss-sclera" fill="#080000"/>
+              <line class="boss-eye-vein" x1="131" y1="100" x2="126" y2="104"/>
+              <line class="boss-eye-vein" x1="131" y1="108" x2="125" y2="105"/>
+              <ellipse cx="122" cy="104" rx="8" ry="8.5" class="boss-iris" id="irisR" fill="url(#irisGrad)"/>
+              <ellipse cx="122" cy="104" rx="2.5" ry="7" class="boss-pupil-shape" id="pupilR"/>
+              <ellipse cx="118" cy="100" rx="2.5" ry="1.8" class="boss-eye-shine"/>
+              <ellipse cx="120" cy="98"  rx="1.2" ry=".9" fill="#fff" opacity=".4"/>
+            </g>
+
+            <!-- ── Nose bridge ── -->
+            <path d="M95,112 Q97,118 94,124 M105,112 Q103,118 106,124" class="boss-nose-bridge"/>
+            <!-- Nostrils -->
+            <ellipse cx="93"  cy="127" rx="6" ry="4" class="boss-nostril-shape"/>
+            <ellipse cx="107" cy="127" rx="6" ry="4" class="boss-nostril-shape"/>
+            <!-- Nostril flare detail -->
+            <path d="M89,126 Q93,122 97,126" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width=".8" opacity=".5"/>
+            <path d="M103,126 Q107,122 111,126" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width=".8" opacity=".5"/>
+
+            <!-- ── Cheekbones ── -->
+            <path d="M60,108 Q66,120 70,130" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".35" stroke-linecap="round"/>
+            <path d="M140,108 Q134,120 130,130" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".35" stroke-linecap="round"/>
+
+            <!-- ── Scars ── -->
+            <path class="boss-scar" d="M115,88 L125,100"/>
+            <path class="boss-scar" d="M112,91 L120,101"/>
+            <path class="boss-scar" d="M68,130 Q72,136 66,142"/>
+
+            <!-- ── Jaw definition ── -->
+            <path d="M56,128 Q60,158 100,168 Q140,158 144,128" fill="none" stroke="var(--boss-color,#ff4455)" stroke-width="1.5" opacity=".4"/>
+
+            <!-- ── Mouth ── -->
+            <!-- Outer mouth -->
+            <path d="M72,148 Q86,140 100,141 Q114,140 128,148 Q120,168 100,170 Q80,168 72,148 Z" class="boss-mouth-outer" id="bossMouthPath"/>
+            <!-- Gums -->
+            <path d="M74,149 Q87,142 100,143 Q113,142 126,149" class="boss-gum-upper" fill="#4a0010"/>
+            <!-- Upper fangs -->
+            <polygon class="boss-fang-shape" points="82,149 80,162 85,149"/>
+            <polygon class="boss-fang-dark"  points="82,149 81,158 84,149"/>
+            <polygon class="boss-fang-shape" points="93,147 91,162 96,147"/>
+            <polygon class="boss-fang-dark"  points="93,147 92,157 95,147"/>
+            <polygon class="boss-fang-shape" points="104,147 102,163 107,147"/>
+            <polygon class="boss-fang-dark"  points="104,147 103,158 106,147"/>
+            <polygon class="boss-fang-shape" points="115,147 113,162 118,147"/>
+            <polygon class="boss-fang-dark"  points="115,147 114,157 117,147"/>
+            <!-- Lower fangs -->
+            <polygon class="boss-fang-shape" points="86,168 84,158 89,168" opacity=".8"/>
+            <polygon class="boss-fang-shape" points="100,170 98,159 103,170" opacity=".8"/>
+            <polygon class="boss-fang-shape" points="114,168 112,158 117,168" opacity=".8"/>
+            <!-- Tongue -->
+            <ellipse cx="100" cy="163" rx="10" ry="5" class="boss-tongue" id="bossTongue"/>
+            <!-- Mouth dark inner -->
+            <path d="M80,155 Q100,160 120,155 Q115,168 100,169 Q85,168 80,155 Z" class="boss-mouth-inner"/>
+
+            <!-- ── Breath particles ── -->
+            <circle class="boss-breath" cx="93"  cy="127" r="4"/>
+            <circle class="boss-breath" cx="107" cy="127" r="3"/>
+            <circle class="boss-breath" cx="100" cy="125" r="5"/>
+
+            <!-- ── Face highlight (top) ── -->
+            <ellipse cx="88" cy="78" rx="22" ry="12" fill="#fff" opacity=".04"/>
+          </svg>
+        </div>
+
+        <!-- Particles container -->
+        <div class="boss-particles" id="bossParticles"></div>
+        <!-- Boss emoji badge -->
+        <div class="boss-emoji-badge" id="bossEmoji">👹</div>
+      </div>
+
+      <div class="boss-name"         id="bossName">Math Monster</div>
+      <div class="boss-title-text"   id="bossTitleText">The Number Cruncher</div>
+      <div class="boss-subject-badge" id="bossSubjectBadge">📐 Math</div>
+      <div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpBar"></div><span id="bossHpText">10 HP</span></div>
+    </div>
+
+    <div class="player-hp-row">
+      <span class="php-lbl">❤️ Your HP</span>
+      <div class="php-track"><div class="php-fill" id="phpBar"></div></div>
+      <span id="phpText">3 HP</span>
+    </div>
+    <div class="question-strip" id="bossQuestionCard">
+      <div class="qs-text" id="bossQuestionText">Loading…</div>
+    </div>
+    <div class="options-list" id="bossOptionsGrid"></div>
+    <div class="boss-status" id="bossStatus"></div>
+  </div>
+</div>
+
+<!-- Boss Result -->
+<div id="bossResultOverlay" class="overlay" style="display:none">
+  <div class="ov-box card">
+    <div class="ovb-emoji" id="brEmoji">🏆</div>
+    <div class="ovb-title" id="brTitle">Boss Defeated!</div>
+    <div class="ovb-sub"   id="brSub">You earned bonus coins!</div>
+    <div class="ovb-content" id="brReward">+300 🪙</div>
+    <button class="btn btn-primary mt" onclick="BossMode.closeResult()">Collect!</button>
+  </div>
+</div>
