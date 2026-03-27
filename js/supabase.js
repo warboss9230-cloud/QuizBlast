@@ -9,8 +9,8 @@
    3. Copy "anon / public" key → SUPABASE_ANON_KEY
 ════════════════════════════════════════════════════════════ */
 
-const SUPABASE_URL      = 'https://YOUR-PROJECT-ID.supabase.co';   // ← Apna URL yahan
-const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY-HERE';                    // ← Apna anon key yahan
+const SUPABASE_URL      = 'https://rzbpvygzgsnfwnyvbaus.supabase.co';   // ← Apna URL yahan
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6YnB2eWd6Z3NuZndueXZiYXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzE1NjUsImV4cCI6MjA5MDIwNzU2NX0.AOvUN-T9hWdE0cP8CYyE4udwcL-fgZp_SSE38KAYgUw';                    // ← Apna anon key yahan
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
