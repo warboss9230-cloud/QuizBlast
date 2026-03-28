@@ -18,6 +18,28 @@
   <meta name="theme-color" content="#6c63ff"/>
   <link rel="apple-touch-icon" href="icons/logo.png"/>
   <link rel="icon" href="favicon.ico"/>
+<style> tag index.html ke <head> mein add karo
+══════════════════════════════════════ -->
+<style>
+.pvp-online-opt {
+  width:100%; padding:14px 16px;
+  background:rgba(10,5,30,0.85);
+  border:2px solid rgba(168,85,247,.4);
+  border-radius:50px;
+  font-family:var(--fb); font-size:.92rem; font-weight:800;
+  color:#fff; cursor:pointer; text-align:left;
+  transition:all .2s; letter-spacing:.3px;
+}
+.pvp-online-opt:hover:not(:disabled) {
+  border-color:#a855f7;
+  box-shadow:0 0 10px rgba(168,85,247,.5);
+}
+.pvp-hist-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:.82rem; font-weight:800; gap:8px;
+}
+</style>
 </head>
 <body class="loading">
 
@@ -116,86 +138,78 @@
       </div>
     </div>
 
-    <!-- Main Play Button — Purple Glow -->
-    <button class="btn btn-primary btn-xl pulse-btn"
+    <!-- TOP ROW — 3 small buttons -->
+    <div style="display:flex;gap:8px;margin:0 16px">
+
+      <!-- Leaderboard — Gold -->
+      <button onclick="App.goTo('screen-leaderboard')"
+        style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+               background:rgba(10,5,30,0.85);
+               border:2px solid #f59e0b;
+               box-shadow:0 0 8px #f59e0b, 0 0 18px rgba(245,158,11,0.4);
+               border-radius:16px;padding:10px 6px;cursor:pointer;
+               font-family:'Nunito',sans-serif;font-weight:900;
+               font-size:.68rem;letter-spacing:.5px;
+               color:#fff;text-shadow:0 0 6px #fcd34d;">
+        <span style="font-size:1.4rem">🏆</span>
+        <span>LEADER<br>BOARD</span>
+      </button>
+
+      <!-- My Progress — Cyan -->
+      <button onclick="App.goTo('screen-progress')"
+        style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+               background:rgba(10,5,30,0.85);
+               border:2px solid #06b6d4;
+               box-shadow:0 0 8px #06b6d4, 0 0 18px rgba(6,182,212,0.4);
+               border-radius:16px;padding:10px 6px;cursor:pointer;
+               font-family:'Nunito',sans-serif;font-weight:900;
+               font-size:.68rem;letter-spacing:.5px;
+               color:#fff;text-shadow:0 0 6px #67e8f9;">
+        <span style="font-size:1.4rem">📊</span>
+        <span>MY<br>PROGRESS</span>
+      </button>
+
+      <!-- Install App — Pink -->
+      <button onclick="PWAInstall.install()"
+        style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+               background:rgba(10,5,30,0.85);
+               border:2px solid #ec4899;
+               box-shadow:0 0 8px #ec4899, 0 0 18px rgba(236,72,153,0.4);
+               border-radius:16px;padding:10px 6px;cursor:pointer;
+               font-family:'Nunito',sans-serif;font-weight:900;
+               font-size:.68rem;letter-spacing:.5px;
+               color:#fff;text-shadow:0 0 6px #f9a8d4;">
+        <span style="font-size:1.4rem">📱</span>
+        <span>INSTALL<br>APP</span>
+      </button>
+
+    </div>
+
+    <!-- QUIZ PLAY — Big Purple -->
+    <button class="pulse-btn"
       onclick="App.startPlaying()"
       style="width:calc(100% - 32px);margin:0 16px;border-radius:50px;
-             padding:16px;font-size:1.1rem;font-weight:900;letter-spacing:1px;
+             padding:18px;font-size:1.2rem;font-weight:900;letter-spacing:1.5px;
              background:linear-gradient(135deg,#a855f7,#6366f1);
              border:2px solid #c084fc;
-             box-shadow:0 0 14px #a855f7, 0 0 30px rgba(168,85,247,0.5);
-             color:#fff;text-shadow:0 0 8px #e879f9;">
+             box-shadow:0 0 16px #a855f7, 0 0 36px rgba(168,85,247,0.55);
+             color:#fff;text-shadow:0 0 10px #e879f9;
+             font-family:'Nunito',sans-serif;cursor:pointer;">
       ▶ QUIZ PLAY
     </button>
 
-    <!-- Main Nav Buttons -->
-    <div style="display:flex;flex-direction:column;gap:10px;margin:0 16px">
-
-      <!-- Leaderboard — Gold Glow -->
-      <button onclick="App.goTo('screen-leaderboard')"
-        style="display:flex;align-items:center;gap:12px;
-               background:rgba(10,5,30,0.85);
-               border:2px solid #f59e0b;
-               box-shadow:0 0 10px #f59e0b, 0 0 22px rgba(245,158,11,0.4);
-               border-radius:50px;padding:14px 20px;cursor:pointer;
-               font-family:'Nunito',sans-serif;font-weight:900;
-               font-size:1rem;letter-spacing:1px;
-               color:#fff;text-shadow:0 0 8px #fcd34d, 0 0 18px #f59e0b;">
-        <span style="font-size:1.3rem">🏆</span>
-        <span>LEADERBOARD</span>
-        <span style="margin-left:auto;opacity:.7">›</span>
-      </button>
-
-      <!-- My Progress — Cyan Glow -->
-      <button onclick="App.goTo('screen-progress')"
-        style="display:flex;align-items:center;gap:12px;
-               background:rgba(10,5,30,0.85);
-               border:2px solid #06b6d4;
-               box-shadow:0 0 10px #06b6d4, 0 0 22px rgba(6,182,212,0.4);
-               border-radius:50px;padding:14px 20px;cursor:pointer;
-               font-family:'Nunito',sans-serif;font-weight:900;
-               font-size:1rem;letter-spacing:1px;
-               color:#fff;text-shadow:0 0 8px #67e8f9, 0 0 18px #06b6d4;">
-        <span style="font-size:1.3rem">📊</span>
-        <span>MY PROGRESS</span>
-        <span style="margin-left:auto;opacity:.7">›</span>
-      </button>
-
-    </div>
-
-    <!-- Comic Library — Orange Glow -->
-    <div style="margin:0 16px 10px">
-      <a href="https://comiclibrary-pi.vercel.app/" target="_blank" rel="noopener"
-        style="display:flex;align-items:center;gap:12px;
-               background:rgba(10,5,30,0.85);
-               border:2px solid #ff9f43;
-               box-shadow:0 0 10px #ff9f43, 0 0 24px rgba(255,159,67,0.5);
-               border-radius:50px;padding:14px 20px;cursor:pointer;
-               font-family:'Nunito',sans-serif;font-size:1rem;
-               font-weight:900;text-decoration:none;letter-spacing:1px;
-               color:#fff;text-shadow:0 0 8px #ffcc00, 0 0 18px #ff9f43;">
-        <span style="font-size:1.3rem">📚</span>
-        <span>COMIC LIBRARY</span>
-        <span style="margin-left:auto;opacity:.7">›</span>
-      </a>
-    </div>
-
-    <!-- Install App — Pink Glow -->
-    <div style="margin:0 16px">
-      <button onclick="PWAInstall.install()"
-        style="display:flex;align-items:center;gap:12px;width:100%;
-               background:rgba(10,5,30,0.85);
-               border:2px solid #ec4899;
-               box-shadow:0 0 10px #ec4899, 0 0 22px rgba(236,72,153,0.4);
-               border-radius:50px;padding:14px 20px;cursor:pointer;
-               font-family:'Nunito',sans-serif;font-size:1rem;
-               font-weight:900;letter-spacing:1px;
-               color:#fff;text-shadow:0 0 8px #f9a8d4, 0 0 18px #ec4899;">
-        <span style="font-size:1.3rem">📱</span>
-        <span>INSTALL APP</span>
-        <span style="margin-left:auto;opacity:.7">›</span>
-      </button>
-    </div>
+    <!-- COMIC LIBRARY — Big Green Gradient -->
+    <a href="https://comiclibrary-pi.vercel.app/" target="_blank" rel="noopener"
+      style="display:block;width:calc(100% - 32px);margin:0 16px;
+             border-radius:50px;padding:18px;font-size:1.2rem;font-weight:900;
+             letter-spacing:1.5px;text-align:center;text-decoration:none;
+             background:linear-gradient(135deg,#059669,#10b981);
+             border:2px solid #34d399;
+             box-shadow:0 0 16px #10b981, 0 0 36px rgba(16,185,129,0.55);
+             color:#fff;text-shadow:0 0 10px #6ee7b7;
+             font-family:'Nunito',sans-serif;cursor:pointer;">
+      📚 COMIC LIBRARY
+    </a>
 
   </div>
 </div>
@@ -609,6 +623,19 @@
     <div class="w38"></div>
   </div>
   <div class="pvp-hub-list">
+
+    <!-- Online PvP -->
+    <div class="pvp-hub-card card" onclick="PvPOnline.open()"
+      style="border:2px solid #a855f7;box-shadow:0 0 12px rgba(168,85,247,.4);">
+      <span class="phc-icon">🌐</span>
+      <div class="phc-info">
+        <div class="phc-title" style="color:#c084fc">Online PvP</div>
+        <div class="phc-sub">Random matchmaking · Live · Score compare</div>
+      </div>
+      <span class="phc-badge" style="background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff">NEW</span>
+    </div>
+
+    <!-- Offline PvP -->
     <div class="pvp-hub-card card" onclick="PvPOffline.setup()">
       <span class="phc-icon">🎮</span>
       <div class="phc-info">
@@ -617,6 +644,7 @@
       </div>
       <span class="phc-badge">FREE</span>
     </div>
+
   </div>
   <div class="pvp-stats-card card">
     <div class="psc-title">📊 Your Battle Stats</div>
@@ -1060,5 +1088,180 @@
     document.body.classList.remove('loading');
   }, 3000);
 </script>
+<!-- ══════════════════════════════════════════════════════════════
+     YEH TEEN SCREENS index.html mein add karni hain
+     Jagah: </body> se pehle, existing screens ke baad
+     ══════════════════════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP HUB
+══════════════════════════════════════ -->
+<div id="screen-pvp-online" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-pvp-hub')">←</button>
+    <h2>🌐 Online PvP</h2>
+    <div class="w38"></div>
+  </div>
+
+  <!-- Matchmaking Card -->
+  <div class="card" style="margin:12px 16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+
+    <div style="text-align:center;font-size:2rem">⚔️</div>
+    <div style="text-align:center;font-weight:900;font-size:1.1rem;color:#fff">Random Matchmaking</div>
+    <div style="text-align:center;font-size:.82rem;color:var(--text2)">Kisi bhi online player se match ho jao!</div>
+
+    <!-- Status -->
+    <div id="pvpOnlineStatus"
+      style="text-align:center;font-weight:800;font-size:.9rem;
+             color:#a855f7;min-height:24px;padding:8px;
+             background:rgba(168,85,247,.08);border-radius:12px;">
+      Ready to battle? 🎮
+    </div>
+
+    <!-- Bet Coins (Optional) -->
+    <div style="display:flex;align-items:center;gap:10px">
+      <label style="font-size:.85rem;font-weight:800;color:var(--text2);white-space:nowrap">🪙 Bet (optional):</label>
+      <input id="pvpBetInput" type="number" min="0" max="500" value="0"
+        style="flex:1;padding:8px 12px;background:var(--bg3);border:2px solid var(--border);
+               border-radius:12px;color:#fff;font-family:var(--fb);font-weight:800;font-size:.9rem;outline:none"/>
+    </div>
+
+    <!-- Find Match Button -->
+    <button id="pvpFindBtn" class="btn btn-primary btn-full" onclick="PvPOnline.findMatch()">
+      🔍 FIND MATCH
+    </button>
+
+    <!-- Cancel -->
+    <button class="btn btn-ghost btn-full" onclick="PvPOnline.cancel()">
+      ✕ CANCEL
+    </button>
+  </div>
+
+  <!-- Match History -->
+  <div class="card" style="margin:0 16px;padding:16px">
+    <div style="font-weight:900;font-size:.9rem;color:#f59e0b;margin-bottom:10px">📊 MATCH HISTORY</div>
+    <div id="pvpOnlineHistory"></div>
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP BATTLE
+══════════════════════════════════════ -->
+<div id="screen-pvp-online-battle" class="screen">
+
+  <!-- Live Score Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;
+              padding:12px 16px;background:rgba(10,5,30,.9);
+              border-bottom:1px solid rgba(255,255,255,.08)">
+
+    <!-- Me -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px">
+      <span id="pvpOnlineMyAvatar" style="font-size:1.6rem">🐉</span>
+      <span id="pvpOnlineMyName" style="font-size:.72rem;font-weight:900;color:#fff;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">You</span>
+      <span id="pvpOnlineMyScore"
+        style="font-size:1.4rem;font-weight:900;
+               color:#4ade80;text-shadow:0 0 10px #4ade80">0</span>
+    </div>
+
+    <!-- Timer + Q num -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div id="pvpOnlineTimer"
+        style="font-size:2rem;font-weight:900;color:#4ade80;
+               text-shadow:0 0 12px #4ade80;min-width:40px;text-align:center">15</div>
+      <div id="pvpOnlineQNum" style="font-size:.72rem;font-weight:800;color:var(--text2)">Q1/10</div>
+    </div>
+
+    <!-- Opponent -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px">
+      <span id="pvpOnlineOppAvatar" style="font-size:1.6rem">🐉</span>
+      <span id="pvpOnlineOppName" style="font-size:.72rem;font-weight:900;color:#fff;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Opponent</span>
+      <span id="pvpOnlineOppScore"
+        style="font-size:1.4rem;font-weight:900;
+               color:#f43f5e;text-shadow:0 0 10px #f43f5e">...</span>
+    </div>
+  </div>
+
+  <!-- VS divider -->
+  <div style="text-align:center;font-size:.7rem;font-weight:900;
+              color:rgba(255,255,255,.3);letter-spacing:3px;padding:4px">VS</div>
+
+  <!-- Question -->
+  <div style="margin:8px 16px;padding:18px;background:var(--card);
+              border-radius:var(--r);border:1px solid var(--border)">
+    <div id="pvpOnlineQText"
+      style="font-size:1rem;font-weight:800;color:#fff;
+             line-height:1.5;text-align:center">
+      Loading...
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div id="pvpOnlineOpts"
+    style="display:flex;flex-direction:column;gap:10px;margin:0 16px;padding-bottom:20px">
+  </div>
+</div>
+
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP RESULT
+══════════════════════════════════════ -->
+<div id="screen-pvp-online-result" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;
+              justify-content:center;height:100%;gap:20px;padding:24px">
+
+    <!-- Result Title -->
+    <div id="pvpResTitle"
+      style="font-size:2.2rem;font-weight:900;text-align:center;
+             text-shadow:0 0 20px currentColor">
+      🏆 YOU WON!
+    </div>
+
+    <!-- Score Card -->
+    <div style="background:var(--card);border-radius:var(--r);
+                border:1px solid var(--border);padding:24px;width:100%;
+                display:flex;justify-content:space-around;align-items:center">
+
+      <!-- Me -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:.8rem;font-weight:800;color:var(--text2)">YOU</div>
+        <div id="pvpResMyName" style="font-size:.9rem;font-weight:900;color:#fff">Player</div>
+        <div id="pvpResMyScore"
+          style="font-size:2.5rem;font-weight:900;color:#4ade80;
+                 text-shadow:0 0 16px #4ade80">0</div>
+      </div>
+
+      <div style="font-size:1.5rem;font-weight:900;color:var(--text2)">VS</div>
+
+      <!-- Opponent -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:.8rem;font-weight:800;color:var(--text2)">OPPONENT</div>
+        <div id="pvpResOppName" style="font-size:.9rem;font-weight:900;color:#fff">Player</div>
+        <div id="pvpResOppScore"
+          style="font-size:2.5rem;font-weight:900;color:#f43f5e;
+                 text-shadow:0 0 16px #f43f5e">0</div>
+      </div>
+    </div>
+
+    <!-- Coins result -->
+    <div id="pvpResCoins"
+      style="font-size:1.1rem;font-weight:900;text-align:center"></div>
+
+    <!-- Buttons -->
+    <button class="btn btn-primary btn-full" onclick="PvPOnline.playAgain()">
+      🔄 PLAY AGAIN
+    </button>
+    <button class="btn btn-ghost btn-full" onclick="App.goTo('screen-pvp-hub')">
+      🏠 BACK TO HUB
+    </button>
+  </div>
+</div>
+
+
+
+<script src="js/pvp_online.js"></script>
 </body>
 </html>
