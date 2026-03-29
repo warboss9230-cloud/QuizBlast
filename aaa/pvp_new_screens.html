@@ -1,0 +1,213 @@
+<!-- ══════════════════════════════════════════════════════════════
+     YEH SCREENS index.html mein existing pvp screens ke BAAD add karo
+     ══════════════════════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP HUB (UPDATED)
+     Purana screen-pvp-online replace karo is se
+══════════════════════════════════════ -->
+<div id="screen-pvp-online" class="screen">
+  <div class="screen-header">
+    <button class="btn-back" onclick="App.goTo('screen-pvp-hub')">←</button>
+    <h2>🌐 Online PvP</h2>
+    <div class="w38"></div>
+  </div>
+
+  <!-- My Stats Box -->
+  <div class="card" style="margin:8px 16px;padding:14px">
+    <div style="font-weight:900;font-size:.82rem;color:#a855f7;margin-bottom:8px">👤 MY STATS</div>
+    <div id="pvpMyStatsBox"><div style="color:var(--text2);font-size:.82rem">Loading...</div></div>
+  </div>
+
+  <!-- Matchmaking Card -->
+  <div class="card" style="margin:0 16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+
+    <div style="text-align:center;font-weight:900;font-size:1rem;color:#fff">⚔️ Random Matchmaking</div>
+
+    <div id="pvpOnlineStatus"
+      style="text-align:center;font-weight:800;font-size:.88rem;color:#a855f7;
+             min-height:22px;padding:8px;background:rgba(168,85,247,.08);border-radius:12px;">
+      Ready to battle? 🎮
+    </div>
+
+    <!-- Bet Coins -->
+    <div style="display:flex;align-items:center;gap:10px">
+      <label style="font-size:.82rem;font-weight:800;color:var(--text2);white-space:nowrap">🪙 Bet:</label>
+      <input id="pvpBetInput" type="number" min="0" max="500" value="0"
+        style="flex:1;padding:8px 12px;background:var(--bg3);border:2px solid var(--border);
+               border-radius:12px;color:#fff;font-family:var(--fb);font-weight:800;font-size:.88rem;outline:none"/>
+    </div>
+
+    <button id="pvpFindBtn" class="btn btn-primary btn-full" onclick="PvPOnline.findMatch()">🔍 FIND MATCH</button>
+    <button class="btn btn-ghost btn-full" onclick="PvPOnline.cancel()">✕ CANCEL</button>
+  </div>
+
+  <!-- Challenge Mode -->
+  <div class="card" style="margin:8px 16px;padding:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-weight:900;font-size:.82rem;color:#f59e0b">⚔️ CHALLENGE A PLAYER</div>
+    <div style="display:flex;gap:8px">
+      <input id="pvpChallengeInput" type="text" placeholder="Username daalo..."
+        style="flex:1;padding:9px 12px;background:var(--bg3);border:2px solid var(--border);
+               border-radius:12px;color:#fff;font-family:var(--fb);font-weight:800;font-size:.85rem;outline:none"/>
+      <button class="btn btn-primary" style="padding:9px 14px;font-size:.85rem" onclick="PvPOnline.sendChallenge()">Send ⚔️</button>
+    </div>
+    <!-- Incoming challenges appear here -->
+    <div id="pvpIncomingChallenge" style="display:none"></div>
+  </div>
+
+  <!-- Season Leaderboard -->
+  <div class="card" style="margin:0 16px;padding:14px">
+    <div style="font-weight:900;font-size:.82rem;color:#f59e0b;margin-bottom:8px">🏆 SEASON LEADERBOARD</div>
+    <div id="pvpSeasonBoard"></div>
+  </div>
+
+  <!-- Match History -->
+  <div class="card" style="margin:8px 16px 16px;padding:14px">
+    <div style="font-weight:900;font-size:.82rem;color:#06b6d4;margin-bottom:8px">📊 MATCH HISTORY</div>
+    <div id="pvpOnlineHistory"></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — PLAYER PROFILE CARD
+     (shown before battle starts)
+══════════════════════════════════════ -->
+<div id="screen-pvp-profile-card" class="screen">
+  <div style="display:flex;flex-direction:column;justify-content:center;
+              height:100%;padding:24px;gap:0">
+    <div class="card" style="padding:24px" id="pvpProfileCard">
+      <div style="text-align:center;color:var(--text2)">Loading...</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP BATTLE (UPDATED)
+     Purana screen-pvp-online-battle replace karo
+══════════════════════════════════════ -->
+<div id="screen-pvp-online-battle" class="screen">
+
+  <!-- Live Score Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;
+              padding:10px 14px;background:rgba(10,5,30,.95);
+              border-bottom:1px solid rgba(255,255,255,.08)">
+
+    <!-- Me -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:75px">
+      <span id="pvpOnlineMyAvatar" style="font-size:1.5rem">🐉</span>
+      <span id="pvpOnlineMyName" style="font-size:.68rem;font-weight:900;color:#fff;max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">You</span>
+      <span id="pvpMyStreak" style="font-size:.68rem;color:#f59e0b;font-weight:900"></span>
+      <span id="pvpOnlineMyScore" style="font-size:1.5rem;font-weight:900;color:#4ade80;text-shadow:0 0 10px #4ade80">0</span>
+    </div>
+
+    <!-- Timer + Q -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <div id="pvpOnlineTimer" style="font-size:2.2rem;font-weight:900;color:#4ade80;text-shadow:0 0 12px #4ade80;min-width:44px;text-align:center">15</div>
+      <div id="pvpOnlineQNum" style="font-size:.7rem;font-weight:800;color:var(--text2)">Q1/10</div>
+      <!-- Quick Chat Button -->
+      <button onclick="PvPOnline.toggleChat()"
+        style="background:rgba(168,85,247,.2);border:1px solid #a855f7;border-radius:20px;
+               padding:3px 8px;font-size:.68rem;font-weight:900;color:#c084fc;cursor:pointer;margin-top:2px">
+        💬 Chat
+      </button>
+    </div>
+
+    <!-- Opponent -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:75px">
+      <span id="pvpOnlineOppAvatar" style="font-size:1.5rem">🐉</span>
+      <span id="pvpOnlineOppName" style="font-size:.68rem;font-weight:900;color:#fff;max-width:75px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Opp</span>
+      <span style="font-size:.68rem;color:#f59e0b;font-weight:900"> </span>
+      <span id="pvpOnlineOppScore" style="font-size:1.5rem;font-weight:900;color:#f43f5e;text-shadow:0 0 10px #f43f5e">...</span>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:.65rem;font-weight:900;color:rgba(255,255,255,.25);letter-spacing:3px;padding:3px">VS</div>
+
+  <!-- Quick Chat Panel -->
+  <div id="pvpChatPanel" style="display:none;position:absolute;top:120px;left:50%;transform:translateX(-50%);
+       background:rgba(10,5,30,.98);border:2px solid #a855f7;border-radius:16px;
+       padding:12px;z-index:100;min-width:220px;box-shadow:0 0 20px rgba(168,85,247,.5)">
+    <div style="font-size:.78rem;font-weight:900;color:#c084fc;margin-bottom:8px;text-align:center">💬 Quick Chat</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('👋 Hi!')">👋 Hi!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('🔥 GG!')">🔥 GG!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('😎 Nice!')">😎 Nice!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('💪 Let\'s go!')">💪 Let's go!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('😂 Haha!')">😂 Haha!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('🙏 Good game!')">🙏 Good game!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('⚡ Too fast!')">⚡ Too fast!</button>
+      <button class="pvp-chat-btn" onclick="PvPOnline.sendChat('😤 Rematch!')">😤 Rematch!</button>
+    </div>
+  </div>
+
+  <!-- Chat Log (auto-disappears) -->
+  <div id="pvpChatLog" style="min-height:28px;padding:0 14px;overflow:hidden"></div>
+
+  <!-- Question -->
+  <div style="margin:6px 14px;padding:16px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)">
+    <div id="pvpOnlineQText" style="font-size:.95rem;font-weight:800;color:#fff;line-height:1.5;text-align:center">Loading...</div>
+  </div>
+
+  <!-- Options -->
+  <div id="pvpOnlineOpts" style="display:flex;flex-direction:column;gap:8px;margin:0 14px;padding-bottom:16px"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN — ONLINE PVP RESULT (UPDATED)
+     Purana screen-pvp-online-result replace karo
+══════════════════════════════════════ -->
+<div id="screen-pvp-online-result" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;
+              justify-content:center;height:100%;gap:16px;padding:24px">
+
+    <div id="pvpResTitle" style="font-size:2.2rem;font-weight:900;text-align:center">🏆 YOU WON!</div>
+
+    <!-- Score Card -->
+    <div style="background:var(--card);border-radius:var(--r);border:1px solid var(--border);
+                padding:20px;width:100%;display:flex;justify-content:space-around;align-items:center">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:.75rem;font-weight:800;color:var(--text2)">YOU</div>
+        <div id="pvpResMyName" style="font-size:.88rem;font-weight:900;color:#fff">Player</div>
+        <div id="pvpResMyScore" style="font-size:2.5rem;font-weight:900;color:#4ade80;text-shadow:0 0 16px #4ade80">0</div>
+      </div>
+      <div style="font-size:1.3rem;font-weight:900;color:rgba(255,255,255,.3)">VS</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:.75rem;font-weight:800;color:var(--text2)">OPPONENT</div>
+        <div id="pvpResOppName" style="font-size:.88rem;font-weight:900;color:#fff">Player</div>
+        <div id="pvpResOppScore" style="font-size:2.5rem;font-weight:900;color:#f43f5e;text-shadow:0 0 16px #f43f5e">0</div>
+      </div>
+    </div>
+
+    <!-- Streak + Coins -->
+    <div id="pvpResStreak" style="font-size:1rem;font-weight:900;text-align:center"></div>
+    <div id="pvpResCoins"  style="font-size:1.1rem;font-weight:900;text-align:center"></div>
+
+    <button class="btn btn-primary btn-full" onclick="PvPOnline.playAgain()">🔄 PLAY AGAIN</button>
+    <button class="btn btn-ghost btn-full"   onclick="App.goTo('screen-pvp-hub')">🏠 BACK TO HUB</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     CSS — Add to <head> in index.html
+══════════════════════════════════════ -->
+<style>
+.pvp-online-opt {
+  width:100%;padding:13px 16px;
+  background:rgba(10,5,30,0.85);
+  border:2px solid rgba(168,85,247,.4);border-radius:50px;
+  font-family:var(--fb);font-size:.9rem;font-weight:800;
+  color:#fff;cursor:pointer;text-align:left;transition:all .2s;
+}
+.pvp-online-opt:hover:not(:disabled){border-color:#a855f7;box-shadow:0 0 10px rgba(168,85,247,.5);}
+.pvp-hist-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem;font-weight:800;gap:8px;}
+.pvp-chat-btn{padding:7px 8px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.4);
+  border-radius:10px;font-family:var(--fb);font-size:.78rem;font-weight:800;color:#fff;cursor:pointer;}
+.pvp-chat-btn:hover{background:rgba(168,85,247,.35);}
+@keyframes pvpChatPop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
